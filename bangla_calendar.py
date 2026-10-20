@@ -97,7 +97,7 @@ class BanglaCalendarApp:
         weekdays = tk.Frame(shell, bg=self.SECONDARY); weekdays.pack(fill="x")
         for col, label in enumerate(WEEKDAY_SHORT):
             weekdays.grid_columnconfigure(col, weight=1, uniform="weekday")
-            tk.Label(weekdays, text=label, bg=self.SECONDARY, fg=self.ACCENT if col >= 5 else self.WHITE, font=(self.FONT, 10, "bold"), pady=9).grid(row=0, column=col, sticky="nsew")
+            tk.Label(weekdays, text=label, bg=self.SECONDARY, fg=self.WHITE, font=(self.FONT, 10, "bold"), pady=9).grid(row=0, column=col, sticky="nsew")
         self.grid = tk.Frame(shell, bg=self.LINE); self.grid.pack(fill="both", expand=True, padx=1, pady=1)
         for col in range(7): self.grid.grid_columnconfigure(col, weight=1, uniform="days")
         for row in range(6): self.grid.grid_rowconfigure(row, weight=1, uniform="weeks")
