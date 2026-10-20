@@ -101,7 +101,6 @@ class BanglaCalendarApp:
         self.render_calendar()
 
     def _build(self):
-        # Compact banner, inspired by a printed calendar while remaining a real desktop UI.
         top = tk.Frame(self.root, bg=self.PRIMARY, padx=22, pady=13)
         top.pack(fill="x")
         heading = tk.Frame(top, bg=self.PRIMARY)
@@ -116,45 +115,59 @@ class BanglaCalendarApp:
         content = tk.Frame(self.root, bg=self.BG, padx=14, pady=14)
         content.pack(fill="both", expand=True)
 
-        # Left information panel: current time and the selected Bangla month's season.
-        side = tk.Frame(content, bg=self.PRIMARY, width=252, padx=18, pady=18)
+        # Sidebar combines month/year, today's date and a compact clock.
+        side = tk.Frame(content, bg=self.PRIMARY, width=268, padx=16, pady=16)
         side.pack(side="left", fill="y", padx=(0, 14))
         side.pack_propagate(False)
         tk.Label(side, text="বাংলা ঋতুচক্র", bg=self.PRIMARY, fg=self.ACCENT,
                  font=(self.FONT, 10, "bold")).pack(anchor="w")
         self.side_month_title = tk.Label(side, text="", bg=self.PRIMARY, fg=self.WHITE,
-                                         font=(self.FONT, 25, "bold"), wraplength=212, justify="left")
-        self.side_month_title.pack(anchor="w", pady=(12, 0))
+                                         font=(self.FONT, 24, "bold"), wraplength=225, justify="left")
+        self.side_month_title.pack(anchor="w", pady=(8, 0))
         self.side_year_title = tk.Label(side, text="", bg=self.PRIMARY, fg=self.WHITE,
-                                        font=(self.FONT, 11))
-        self.side_year_title.pack(anchor="w", pady=(1, 12))
-        tk.Frame(side, bg=self.ACCENT, height=3).pack(fill="x", pady=(0, 14))
+                                        font=(self.FONT, 10))
+        self.side_year_title.pack(anchor="w", pady=(0, 8))
+
+        date_clock_row = tk.Frame(side, bg=self.SECONDARY, padx=9, pady=9,
+                                  highlightbackground=self.ACCENT, highlightthickness=1)
+        date_clock_row.pack(fill="x", pady=(0, 13))
+        self.today_label = tk.Label(date_clock_row, text="", bg=self.SECONDARY,
+                                    fg=self.WHITE, font=(self.FONT, 9, "bold"),
+                                    justify="left", wraplength=115, anchor="w")
+        self.today_label.pack(side="left", fill="x", expand=True, anchor="center")
+        self.clock_label = tk.Label(date_clock_row, text="০০:০০:০০", bg=self.SECONDARY,
+                                    fg=self.ACCENT, font=(self.FONT, 14, "bold"),
+                                    cursor="hand2")
+        self.clock_label.pack(side="right", anchor="center")
+        self.clock_tooltip = None
+        self.clock_label.bind("<Enter>", self.show_clock_tooltip)
+        self.clock_label.bind("<Leave>", self.hide_clock_tooltip)
+
+        tk.Frame(side, bg=self.ACCENT, height=3).pack(fill="x", pady=(0, 12))
         self.season_name_label = tk.Label(side, text="", bg=self.ACCENT, fg=self.PRIMARY,
-                                          font=(self.FONT, 16, "bold"), padx=12, pady=7)
+                                          font=(self.FONT, 15, "bold"), padx=11, pady=6)
         self.season_name_label.pack(anchor="w")
         self.season_description_label = tk.Label(
-            side, text="", bg=self.PRIMARY, fg=self.WHITE, font=(self.FONT, 10),
-            justify="left", wraplength=212
+            side, text="", bg=self.PRIMARY, fg=self.WHITE, font=(self.FONT, 9),
+            justify="left", wraplength=225
         )
-        self.season_description_label.pack(anchor="w", pady=(9, 20))
+        self.season_description_label.pack(anchor="w", pady=(8, 14))
 
-        clock_card = tk.Frame(side, bg=self.SECONDARY, padx=12, pady=12,
-                              highlightbackground=self.ACCENT, highlightthickness=1)
-        clock_card.pack(fill="x", pady=(4, 0))
-        tk.Label(clock_card, text="এখন সময়", bg=self.SECONDARY, fg=self.WHITE,
-                 font=(self.FONT, 10, "bold")).pack(anchor="w")
-        self.clock_label = tk.Label(clock_card, text="০০:০০:০০", bg=self.SECONDARY,
-                                    fg=self.ACCENT, font=(self.FONT, 22, "bold"))
-        self.clock_label.pack(anchor="w", pady=(4, 2))
-        self.today_label = tk.Label(clock_card, text="", bg=self.SECONDARY,
-                                    fg=self.WHITE, font=(self.FONT, 9), justify="left",
-                                    wraplength=212)
-        self.today_label.pack(anchor="w")
-        tk.Label(side, text="সময় আপনার কম্পিউটারের ঘড়ি থেকে নেওয়া হয়।",
-                 bg=self.PRIMARY, fg=self.ACCENT, font=(self.FONT, 8),
-                 justify="left", wraplength=212).pack(anchor="w", side="bottom", pady=(14, 0))
+        self.side_holiday_card = tk.Frame(
+            side, bg=self.SECONDARY, padx=10, pady=10,
+            highlightbackground=self.ACCENT, highlightthickness=1
+        )
+        self.side_holiday_card.pack(fill="x", pady=(0, 4))
+        self.side_holiday_title = tk.Label(
+            self.side_holiday_card, text="আজকের ছুটি",
+            bg=self.SECONDARY, fg=self.ACCENT, font=(self.FONT, 10, "bold"),
+            justify="left", anchor="w"
+        )
+        self.side_holiday_title.pack(fill="x")
+        self.side_holiday_content = tk.Frame(self.side_holiday_card, bg=self.SECONDARY)
+        self.side_holiday_content.pack(fill="x", pady=(5, 0))
 
-        # Right panel: month navigation, calendar grid, and selected-day holiday details.
+        # Main panel: a regular 7-column x 6-row calendar with consistent cell borders.
         main = tk.Frame(content, bg=self.BG)
         main.pack(side="left", fill="both", expand=True)
         nav = tk.Frame(main, bg=self.BG)
@@ -202,29 +215,61 @@ class BanglaCalendarApp:
             self.grid.grid_rowconfigure(row, weight=1, uniform="weeks")
 
         detail = tk.Frame(main, bg=self.WHITE, highlightbackground=self.LINE,
-                          highlightthickness=1, padx=14, pady=9)
-        detail.pack(fill="x", pady=(10, 0))
+                          highlightthickness=1, padx=14, pady=8)
+        detail.pack(fill="x", pady=(9, 0))
         tk.Label(detail, text="নির্বাচিত তারিখ", bg=self.WHITE, fg=self.MUTED,
-                 font=(self.FONT, 9)).pack(anchor="w")
+                 font=(self.FONT, 8)).pack(anchor="w")
         self.detail_bn = tk.Label(detail, text="", bg=self.WHITE, fg=self.PRIMARY,
-                                  font=(self.FONT, 15, "bold"))
+                                  font=(self.FONT, 14, "bold"))
         self.detail_bn.pack(anchor="w", pady=(1, 0))
         self.detail_en = tk.Label(detail, text="", bg=self.WHITE, fg=self.TEXT,
                                   font=(self.FONT, 9))
         self.detail_en.pack(anchor="w", pady=(1, 0))
-        self.holiday_detail = tk.Frame(detail, bg=self.WHITE)
-        self.holiday_detail.pack(fill="x", anchor="w", pady=(5, 0))
         tk.Label(main, text="ছুটির তারিখ: সরকারি প্রজ্ঞাপন · সার-সংক্ষেপ: উইকিপিডিয়া নিবন্ধ",
-                 bg=self.BG, fg=self.MUTED, font=(self.FONT, 8)).pack(pady=(6, 0))
+                 bg=self.BG, fg=self.MUTED, font=(self.FONT, 8)).pack(pady=(5, 0))
         self.update_clock()
 
+
     def update_clock(self):
-        """Refresh the on-screen digital clock once per second."""
+        """Refresh the compact clock and today's Bangla date every second."""
         now = datetime.now()
         self.clock_label.configure(text=bn_digits(now.strftime("%H:%M:%S")))
         today = date.today()
-        self.today_label.configure(text=f"আজ {format_bangla_date(today)}")
+        _, month, day = gregorian_to_bangla(today)
+        self.today_label.configure(text=f"আজ {bn_digits(day)} {MONTHS[month - 1]}")
         self.root.after(1000, self.update_clock)
+
+    def show_clock_tooltip(self, _event=None):
+        """Show clock-source information only while hovering over the clock."""
+        if self.clock_tooltip is not None:
+            return
+        tip = tk.Toplevel(self.root)
+        tip.overrideredirect(True)
+        try:
+            tip.attributes("-topmost", True)
+        except tk.TclError:
+            pass
+        label = tk.Label(
+            tip,
+            text="সময় আপনার কম্পিউটারের ঘড়ি থেকে নেওয়া হয়েছে।",
+            bg=self.PRIMARY, fg=self.WHITE,
+            padx=9, pady=6, font=(self.FONT, 9),
+            relief="solid", borderwidth=1
+        )
+        label.pack()
+        x = self.clock_label.winfo_rootx()
+        y = self.clock_label.winfo_rooty() + self.clock_label.winfo_height() + 5
+        tip.geometry(f"+{x}+{y}")
+        self.clock_tooltip = tip
+
+    def hide_clock_tooltip(self, _event=None):
+        if self.clock_tooltip is not None:
+            try:
+                self.clock_tooltip.destroy()
+            except tk.TclError:
+                pass
+            self.clock_tooltip = None
+
 
     def move_month(self, delta: int):
         absolute = self.view_year * 12 + self.view_month - 1 + delta
@@ -250,32 +295,91 @@ class BanglaCalendarApp:
         self.side_year_title.configure(text=f"{bn_digits(self.view_year)} বঙ্গাব্দ")
         self.season_name_label.configure(text=f"ঋতু: {season_name}")
         self.season_description_label.configure(text=season_description)
+
         lengths = month_lengths(self.view_year)
         start = bangla_month_start(self.view_year, self.view_month)
         days = lengths[self.view_month - 1]
         end = start + timedelta(days=days - 1)
         self.month_title.configure(text=f"{MONTHS[self.view_month - 1]} {bn_digits(self.view_year)}")
-        self.range_label.configure(text=f"{bn_digits(start.day)} {GREGORIAN_MONTHS[start.month - 1]} {bn_digits(start.year)} — {bn_digits(end.day)} {GREGORIAN_MONTHS[end.month - 1]} {bn_digits(end.year)}")
-        for child in self.grid.winfo_children(): child.destroy()
+        self.range_label.configure(
+            text=f"{bn_digits(start.day)} {GREGORIAN_MONTHS[start.month - 1]} {bn_digits(start.year)} — "
+                 f"{bn_digits(end.day)} {GREGORIAN_MONTHS[end.month - 1]} {bn_digits(end.year)}"
+        )
+
+        for child in self.grid.winfo_children():
+            child.destroy()
         first_col = (start.weekday() + 1) % 7
-        for day in range(1, days + 1):
-            greg = start + timedelta(days=day - 1)
-            row, col = divmod(first_col + day - 1, 7)
-            today, selected = greg == date.today(), greg == self.selected_date
+        current_date = date.today()
+
+        # Draw every slot first, including empty leading/trailing days, to keep
+        # all rows and columns visually aligned and equally sized.
+        for position in range(42):
+            row, col = divmod(position, 7)
+            day_number = position - first_col + 1
+            is_valid_day = 1 <= day_number <= days
+            default_bg = "#F7FCFF" if col < 5 else "#EEF9FE"
+            cell = tk.Frame(
+                self.grid, bg=default_bg, highlightbackground=self.LINE,
+                highlightthickness=1, cursor="hand2" if is_valid_day else "arrow"
+            )
+            cell.grid(row=row, column=col, sticky="nsew", padx=1, pady=1)
+            cell.grid_propagate(False)
+            if not is_valid_day:
+                continue
+
+            greg = start + timedelta(days=day_number - 1)
+            is_today = greg == current_date
+            selected = greg == self.selected_date
             holiday_events = get_holidays_for_date(greg)
-            bg = self.ACCENT if selected else ("#DFF5FF" if holiday_events else ("#E8F8FF" if today else ("#F4FBFF" if col >= 5 else self.WHITE)))
-            cell = tk.Frame(self.grid, bg=bg, highlightbackground=self.ACCENT if today or selected else self.LINE, highlightthickness=2 if today or selected else 1, cursor="hand2")
-            cell.grid(row=row, column=col, sticky="nsew", padx=1, pady=1); cell.grid_propagate(False)
-            fg = self.PRIMARY if today or selected else self.TEXT
-            day_label = tk.Label(cell, text=bn_digits(day), bg=bg, fg=fg, font=(self.FONT, 17, "bold"), cursor="hand2"); day_label.pack(anchor="nw", padx=8, pady=(5, 0))
-            greg_label = tk.Label(cell, text=f"{bn_digits(greg.day)} {GREGORIAN_SHORT[greg.month - 1]}", bg=bg, fg=self.MUTED, font=(self.FONT, 8), cursor="hand2"); greg_label.pack(anchor="nw", padx=8)
-            if today: tk.Label(cell, text="আজ", bg=bg, fg=self.SECONDARY, font=(self.FONT, 8, "bold"), cursor="hand2").place(relx=1, x=-7, y=6, anchor="ne")
-            if holiday_events:
-                holiday_marker = tk.Label(cell, text="ছুটি", bg=bg, fg=self.SECONDARY, font=(self.FONT, 8, "bold"), cursor="hand2")
-                holiday_marker.pack(anchor="nw", padx=8, pady=(2, 0))
-            for widget in (cell, day_label, greg_label): widget.bind("<Button-1>", lambda _e, chosen=greg: self.select_date(chosen))
-            if holiday_events:
-                holiday_marker.bind("<Button-1>", lambda _e, chosen=greg: self.select_date(chosen))
+            if selected:
+                bg = self.ACCENT
+            elif holiday_events:
+                bg = "#DFF5FF"
+            elif is_today:
+                bg = "#E8F8FF"
+            elif col >= 5:
+                bg = "#F4FBFF"
+            else:
+                bg = self.WHITE
+            cell.configure(
+                bg=bg,
+                highlightbackground=self.PRIMARY if holiday_events else (self.ACCENT if is_today or selected else self.LINE),
+                highlightthickness=2 if holiday_events or is_today or selected else 1,
+                cursor="hand2"
+            )
+
+            day_fg = self.PRIMARY if is_today or selected or holiday_events else self.TEXT
+            day_label = tk.Label(
+                cell, text=bn_digits(day_number), bg=bg, fg=day_fg,
+                font=(self.FONT, 16, "bold"), cursor="hand2"
+            )
+            day_label.pack(anchor="nw", padx=7, pady=(4, 0))
+            greg_label = tk.Label(
+                cell, text=f"{bn_digits(greg.day)} {GREGORIAN_SHORT[greg.month - 1]}",
+                bg=bg, fg=self.MUTED, font=(self.FONT, 8), cursor="hand2"
+            )
+            greg_label.pack(anchor="nw", padx=7, pady=(0, 1))
+
+            if is_today or holiday_events:
+                if is_today and holiday_events:
+                    badge_text, badge_bg, badge_fg = "আজ · ছুটি", self.PRIMARY, self.WHITE
+                elif holiday_events:
+                    badge_text, badge_bg, badge_fg = "ছুটি", self.SECONDARY, self.WHITE
+                else:
+                    badge_text, badge_bg, badge_fg = "আজ", self.ACCENT, self.PRIMARY
+                badge = tk.Label(
+                    cell, text=badge_text, bg=badge_bg, fg=badge_fg,
+                    font=(self.FONT, 7, "bold"), padx=4, pady=1, cursor="hand2"
+                )
+                badge.place(relx=1, x=-4, y=4, anchor="ne")
+
+            def select_cell(_event, chosen=greg):
+                self.select_date(chosen)
+            for widget in (cell, day_label, greg_label):
+                widget.bind("<Button-1>", select_cell)
+            if is_today or holiday_events:
+                badge.bind("<Button-1>", select_cell)
+
         self.detail_bn.configure(text=format_bangla_date(self.selected_date))
         self.detail_en.configure(text=f"ইংরেজি তারিখ: {format_gregorian_date(self.selected_date)}")
         self.render_holiday_detail()
@@ -290,35 +394,59 @@ class BanglaCalendarApp:
         return f"{bn_digits(start.day)} {GREGORIAN_MONTHS[start.month - 1]} – {bn_digits(end.day)} {GREGORIAN_MONTHS[end.month - 1]} {bn_digits(end.year)}"
 
     def render_holiday_detail(self):
-        for child in self.holiday_detail.winfo_children():
+        """Place selected-day holiday information in the left sidebar."""
+        for child in self.side_holiday_content.winfo_children():
             child.destroy()
+        is_today = self.selected_date == date.today()
+        self.side_holiday_title.configure(
+            text="আজকের ছুটি" if is_today else "নির্বাচিত দিনের ছুটি"
+        )
         events = get_holidays_for_date(self.selected_date)
         if not events:
             tk.Label(
-                self.holiday_detail,
-                text="এই তারিখে তালিকাভুক্ত সরকারি/ঐচ্ছিক ছুটি নেই।",
-                bg=self.WHITE, fg=self.MUTED, font=(self.FONT, 9)
-            ).pack(anchor="w")
+                self.side_holiday_content,
+                text="এই দিনে তালিকাভুক্ত সরকারি বা ঐচ্ছিক ছুটি নেই।",
+                bg=self.SECONDARY, fg=self.WHITE, font=(self.FONT, 9),
+                wraplength=218, justify="left", anchor="w"
+            ).pack(fill="x")
             return
-        for event in events:
+
+        for event in events[:2]:
             tk.Label(
-                self.holiday_detail,
-                text=f"◆ {event['name']} · {event['category']}",
-                bg=self.WHITE, fg=self.SECONDARY, font=(self.FONT, 10, "bold"),
-                anchor="w", justify="left", wraplength=810
-            ).pack(anchor="w", pady=(2, 0))
+                self.side_holiday_content,
+                text=event["name"],
+                bg=self.SECONDARY, fg=self.WHITE,
+                font=(self.FONT, 10, "bold"), wraplength=218,
+                justify="left", anchor="w"
+            ).pack(fill="x", anchor="w", pady=(0, 2))
             tk.Label(
-                self.holiday_detail, text=event["summary"], bg=self.WHITE,
-                fg=self.TEXT, font=(self.FONT, 9), anchor="w", justify="left",
-                wraplength=810
-            ).pack(anchor="w", pady=(2, 0))
+                self.side_holiday_content,
+                text=event["category"],
+                bg=self.SECONDARY, fg=self.ACCENT,
+                font=(self.FONT, 8), wraplength=218,
+                justify="left", anchor="w"
+            ).pack(fill="x", anchor="w", pady=(0, 3))
+            tk.Label(
+                self.side_holiday_content,
+                text=event["summary"],
+                bg=self.SECONDARY, fg=self.WHITE, font=(self.FONT, 9),
+                wraplength=218, justify="left", anchor="w"
+            ).pack(fill="x", anchor="w", pady=(0, 4))
             tk.Button(
-                self.holiday_detail, text="উইকিপিডিয়া থেকে আরও পড়ুন ↗",
+                self.side_holiday_content, text="আরও পড়ুন ↗",
                 command=lambda url=event["wiki"]: webbrowser.open(url),
-                bg=self.WHITE, fg=self.SECONDARY, activebackground=self.ACCENT,
+                bg=self.ACCENT, fg=self.PRIMARY, activebackground=self.WHITE,
                 activeforeground=self.PRIMARY, relief="flat", bd=0,
-                cursor="hand2", font=(self.FONT, 9, "underline")
-            ).pack(anchor="w", pady=(0, 3))
+                cursor="hand2", padx=7, pady=3, font=(self.FONT, 8, "bold")
+            ).pack(anchor="w", pady=(0, 5))
+        if len(events) > 2:
+            tk.Label(
+                self.side_holiday_content,
+                text=f"এ ছাড়াও আরও {bn_digits(len(events) - 2)}টি ছুটির এন্ট্রি রয়েছে।",
+                bg=self.SECONDARY, fg=self.WHITE, font=(self.FONT, 8),
+                wraplength=218, justify="left", anchor="w"
+            ).pack(fill="x", anchor="w")
+
 
     def show_holiday_list(self):
         year = self.selected_date.year
