@@ -60,7 +60,8 @@ def format_gregorian_date(gregorian_date: date) -> str:
     return f"{bn_digits(gregorian_date.day)} {GREGORIAN_MONTHS[gregorian_date.month - 1]} {bn_digits(gregorian_date.year)} ({WEEKDAYS[gregorian_date.weekday()]})"
 
 class BanglaCalendarApp:
-    # Brand palette: deep blue, primary blue, and bright cyan, with neutral surfaces for readability.\n    BG, PRIMARY, SECONDARY, ACCENT, LIGHT, TEXT, MUTED, LINE, WHITE = "#F2FAFE", "#00578E", "#0084C8", "#00BBFF", "#DFF5FF", "#123047", "#587385", "#C7E8F5", "#FFFFFF"
+    # Brand palette: deep blue, primary blue, and bright cyan, with neutral surfaces for readability.
+    BG, PRIMARY, SECONDARY, ACCENT, LIGHT, TEXT, MUTED, LINE, WHITE = "#F2FAFE", "#00578E", "#0084C8", "#00BBFF", "#DFF5FF", "#123047", "#587385", "#C7E8F5", "#FFFFFF"
     FONT = "Nirmala UI"
     def __init__(self, root: tk.Tk):
         self.root = root
