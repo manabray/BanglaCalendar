@@ -243,3 +243,7 @@ def holidays_for_date(target: date) -> list[dict]:
 
 def is_holiday(target: date) -> bool:
     return bool(holidays_for_date(target))
+
+# Backwards-friendly names used by the desktop UI and automated tests.
+get_holidays_for_year = holidays_for_year
+get_holidays_for_date = holidays_for_date
