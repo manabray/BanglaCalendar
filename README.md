@@ -20,6 +20,9 @@ python bangla_calendar.py
 
 Windows EXE বানাতে `build_windows.bat` ফাইলে ডাবল-ক্লিক করুন। অথবা GitHub Actions চালিয়ে `BanglaCalendar.exe` artifact ডাউনলোড করুন।
 
+## রঙের থিম
+অ্যাপের ব্র্যান্ড রঙ তিনটি: গাঢ় নীল `#00578E`, নীল `#0084C8` এবং উজ্জ্বল সায়ান `#00BBFF`। পঠনযোগ্যতার জন্য সাদা ও হালকা নীলাভ নিরপেক্ষ ব্যাকগ্রাউন্ডও ব্যবহার করা হয়েছে।
+
 ## পরীক্ষা
 ```powershell
 python -m unittest discover -s tests -v
