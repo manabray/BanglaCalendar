@@ -13,7 +13,7 @@ OFFICIAL_HOLIDAY_SOURCE = (
     "%E0%A7%A8%E0%A7%A6%E0%A7%A8%E0%A7%AC-%E0%A6%96%E0%A7%8D%E0%A6%B0%E0%A6%BF%E0%A6%B7%E0%A7%8D%E0%A6%9F%E0%A6%BE%E0%A6%AC%E0%A7%8D%E0%A6%A6%E0%A7%87%E0%A6%B0-%E0%A6%9B%E0%A7%81%E0%A6%9F%E0%A6%BF%E0%A6%B0-%E0%A6%A4%E0%A6%BE%E0%A6%B2%E0%A6%BF%E0%A6%95%E0%A6%BE%E0%A6%B0-%E0%A6%AA%E0%A7%8D%E0%A6%B0%E0%A6%9C%E0%A7%8D%E0%A6%9E%E0%A6%BE%E0%A6%AA%E0%A6%A8-2df487-694139b2a31054345f0e6346"
 )
 OFFICIAL_HOLIDAY_PDF = (
-    "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.oraclecloud15.com/"
+    "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/"
     "n/axvjbnqprylg/b/V2Ministry/o/office-mopa/2024/12/209c6283d9234a0fa8f1f30b90068b57.pdf"
 )
 WIKIPEDIA_PUBLIC_HOLIDAYS = "https://en.wikipedia.org/wiki/Public_holidays_in_Bangladesh"
@@ -97,7 +97,15 @@ HOLIDAYS = [
      "category": "সাধারণ সরকারি ছুটি",
      "summary": "রমজানের শেষ শুক্রবারে মুসলিমরা বিশেষ জুমার নামাজ ও প্রার্থনায় অংশ নেন।",
      "wiki": "https://en.wikipedia.org/wiki/Jumu%27at_al-Wida"},
-    {"start": "2026-04-12", "end": "2026-04-15", "name": "বৈসাবি ও পার্বত্য উৎসব",
+    {"start": "2026-04-12", "end": "2026-04-12", "name": "বৈসাবি ও পার্বত্য উৎসব",
+     "category": "বিশেষ ছুটি — পার্বত্য চট্টগ্রাম ও সংশ্লিষ্ট জনগোষ্ঠী",
+     "summary": "পার্বত্য চট্টগ্রামের বিভিন্ন জাতিগোষ্ঠী নববর্ষ ও নতুন ঋতুকে কেন্দ্র করে বৈসাবি-সহ নানা ঐতিহ্যবাহী উৎসব পালন করেন। নির্দিষ্ট ছুটির প্রযোজ্যতা অঞ্চল ও সম্প্রদায়ভেদে আলাদা হতে পারে।",
+     "wiki": "https://en.wikipedia.org/wiki/Biju_(festival)"},
+    {"start": "2026-04-13", "end": "2026-04-13", "name": "চৈত্র সংক্রান্তি",
+     "category": "সাধারণ ছুটি — নির্দিষ্ট পার্বত্য জেলা",
+     "summary": "বাংলা বছরের শেষ দিন চৈত্র সংক্রান্তি। সরকারি ছুটির প্রজ্ঞাপনে এই ছুটি রাঙামাটি, খাগড়াছড়ি ও বান্দরবান পার্বত্য জেলার জন্য নির্দিষ্ট করা হয়েছে।",
+     "wiki": "https://en.wikipedia.org/wiki/Biju_(festival)"},
+    {"start": "2026-04-15", "end": "2026-04-15", "name": "বৈসাবি ও পার্বত্য উৎসব",
      "category": "বিশেষ ছুটি — পার্বত্য চট্টগ্রাম ও সংশ্লিষ্ট জনগোষ্ঠী",
      "summary": "পার্বত্য চট্টগ্রামের বিভিন্ন জাতিগোষ্ঠী নববর্ষ ও নতুন ঋতুকে কেন্দ্র করে বৈসাবি-সহ নানা ঐতিহ্যবাহী উৎসব পালন করেন। নির্দিষ্ট ছুটির প্রযোজ্যতা অঞ্চল ও সম্প্রদায়ভেদে আলাদা হতে পারে।",
      "wiki": "https://en.wikipedia.org/wiki/Biju_(festival)"},
