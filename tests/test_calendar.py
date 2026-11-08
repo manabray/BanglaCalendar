@@ -3,7 +3,7 @@ import unittest
 from datetime import date
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from bangla_calendar import bangla_to_gregorian, gregorian_to_bangla, month_lengths, season_for_month
+from calendar_core import bangla_to_gregorian, gregorian_to_bangla, month_lengths, season_for_month
 
 class CalendarTests(unittest.TestCase):
     def test_pohela_boishakh(self):

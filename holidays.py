@@ -6,7 +6,13 @@ government circular is added. Wikipedia is used for short descriptions, not as
 the authority for official holiday dates.
 """
 from __future__ import annotations
+import json
 from datetime import date
+from pathlib import Path
+from calendar_core import MAX_BANGLA_YEAR, MIN_BANGLA_YEAR, bangla_to_gregorian
+
+# ব্যবহারকারীর নিজস্ব দিবসের ফাইল (ঐচ্ছিক); ফরম্যাট README-তে দেখুন।
+USER_EVENTS_PATH = Path.home() / ".bangla-calendar" / "events.json"
 
 OFFICIAL_HOLIDAY_SOURCE = (
     "https://mopa.gov.bd/pages/public-holiday/"
@@ -51,6 +57,17 @@ HOLIDAYS = [
      "category": "সাধারণ সরকারি ছুটি",
      "summary": "খ্রিস্টান সম্প্রদায় যিশুখ্রিষ্টের জন্ম উদ্‌যাপন করেন। বাংলাদেশে দিনটি বড়দিন নামে পরিচিত।",
      "wiki": "https://en.wikipedia.org/wiki/Christmas"},
+
+    # বাংলা তারিখ অনুযায়ী প্রতি বছর একই দিনে পড়া দিবস ("bangla": "মাস-দিন", বৈশাখ = ০১)।
+    # এগুলো সরকারি ছুটি নয়, তাই "holiday": False।
+    {"bangla": "01-25", "holiday": False, "name": "রবীন্দ্র জয়ন্তী (২৫ বৈশাখ)",
+     "category": "জাতীয় দিবস — সরকারি ছুটি নয়",
+     "summary": "বিশ্বকবি রবীন্দ্রনাথ ঠাকুরের জন্মবার্ষিকী। বাংলা ক্যালেন্ডারের ২৫ বৈশাখে দিনটি কবিতা, গান ও সাংস্কৃতিক অনুষ্ঠানের মাধ্যমে পালিত হয়।",
+     "wiki": "https://en.wikipedia.org/wiki/Rabindranath_Tagore"},
+    {"bangla": "02-11", "holiday": False, "name": "নজরুল জয়ন্তী (১১ জ্যৈষ্ঠ)",
+     "category": "জাতীয় দিবস — সরকারি ছুটি নয়",
+     "summary": "জাতীয় কবি কাজী নজরুল ইসলামের জন্মবার্ষিকী। বাংলা ক্যালেন্ডারের ১১ জ্যৈষ্ঠে তাঁর কবিতা ও গান স্মরণ করা হয়।",
+     "wiki": "https://en.wikipedia.org/wiki/Kazi_Nazrul_Islam"},
 
     # Additional 2026 general holidays and leave days from the government circular.
     {"start": "2026-02-04", "end": "2026-02-04", "name": "শবে বরাত",
@@ -211,14 +228,32 @@ HOLIDAYS = [
      "wiki": "https://en.wikipedia.org/wiki/Christmas"}
 ]
 
-def _date_for_event(event: dict, year: int) -> tuple[date, date] | None:
+def _bangla_annual_dates(month: int, day: int, year: int) -> list[date]:
+    """গ্রেগরীয় `year`-এ পড়া একটি বাংলা মাস-দিনের তারিখ(গুলো)।"""
+    found = []
+    for bangla_year in (year - 594, year - 593):
+        if not MIN_BANGLA_YEAR <= bangla_year <= MAX_BANGLA_YEAR:
+            continue
+        try:
+            candidate = bangla_to_gregorian(bangla_year, month, day)
+        except ValueError:  # যেমন সাধারণ বছরের ৩০ ফাল্গুন
+            continue
+        if candidate.year == year:
+            found.append(candidate)
+    return found
+
+
+def _spans_for_event(event: dict, year: int) -> list[tuple[date, date]]:
     if "annual" in event:
         month, day = (int(part) for part in event["annual"].split("-"))
         try:
             event_date = date(year, month, day)
         except ValueError:
-            return None
-        return event_date, event_date
+            return []
+        return [(event_date, event_date)]
+    if "bangla" in event:
+        month, day = (int(part) for part in event["bangla"].split("-"))
+        return [(d, d) for d in _bangla_annual_dates(month, day, year)]
     start = date.fromisoformat(event["start"])
     end = date.fromisoformat(event.get("end", event["start"]))
     if start.year <= year <= end.year:
@@ -226,31 +261,87 @@ def _date_for_event(event: dict, year: int) -> tuple[date, date] | None:
             start = date(year, 1, 1)
         if end.year > year:
             end = date(year, 12, 31)
-        return start, end
-    return None
+        return [(start, end)]
+    return []
+
+
+def _date_for_event(event: dict, year: int) -> tuple[date, date] | None:
+    spans = _spans_for_event(event, year)
+    return spans[0] if spans else None
+
+
+def load_user_events(path: Path | None = None) -> list[dict]:
+    """ব্যবহারকারীর events.json থেকে ব্যক্তিগত দিবস পড়ে (ফাইল না থাকলে খালি তালিকা)।
+
+    {"gregorian": {"03-17": "জন্মদিন"}, "bangla": {"10-20": "বিবাহ বার্ষিকী"},
+     "dates": {"2027-03-10": "নির্দিষ্ট দিন"}}
+    """
+    try:
+        data = json.loads((path or USER_EVENTS_PATH).read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            return []
+    except (OSError, ValueError):
+        return []
+    base = {"category": "ব্যক্তিগত দিবস", "summary": "আপনার যোগ করা দিবস।", "wiki": None, "holiday": False}
+    events: list[dict] = []
+    for key, field in (("gregorian", "annual"), ("bangla", "bangla"), ("dates", "start")):
+        table = data.get(key, {})
+        if not isinstance(table, dict):
+            continue
+        for when, name in table.items():
+            event = {**base, field: str(when), "name": str(name)}
+            try:
+                _spans_for_event(event, 2026)  # ফরম্যাট ঠিক আছে কিনা যাচাই
+            except ValueError:
+                continue
+            events.append(event)
+    return events
+
+
+_user_events: list[dict] | None = None
+_year_cache: dict[int, list[dict]] = {}
+
+
+def reload_user_events(path: Path | None = None) -> None:
+    """ফাইল বদলালে (বা টেস্টে) ব্যক্তিগত দিবস নতুন করে পড়ে।"""
+    global _user_events
+    _user_events = load_user_events(path)
+    _year_cache.clear()
+
 
 def holidays_for_year(year: int) -> list[dict]:
     """Return holiday events relevant to a Gregorian year, sorted by date."""
+    global _user_events
+    if year in _year_cache:
+        return list(_year_cache[year])
+    if _user_events is None:
+        _user_events = load_user_events()
     result = []
-    for event in HOLIDAYS:
-        span = _date_for_event(event, year)
-        if span is None:
-            continue
-        item = dict(event)
-        item["start_date"], item["end_date"] = span
-        result.append(item)
+    for event in HOLIDAYS + _user_events:
+        for start, end in _spans_for_event(event, year):
+            item = dict(event)
+            item["start_date"], item["end_date"] = start, end
+            result.append(item)
     result.sort(key=lambda item: (item["start_date"], item["name"]))
-    return result
+    _year_cache[year] = result
+    return list(result)
+
 
 def holidays_for_date(target: date) -> list[dict]:
-    """Return all holiday/optional-leave records overlapping a given day."""
+    """Return all holiday/optional-leave/observance records overlapping a given day."""
     return [
         event for event in holidays_for_year(target.year)
         if event["start_date"] <= target <= event["end_date"]
     ]
 
+
 def is_holiday(target: date) -> bool:
     return bool(holidays_for_date(target))
+
+
+def is_public_holiday(target: date) -> bool:
+    """সরকারি/ঐচ্ছিক ছুটি আছে কিনা (জন্মজয়ন্তী বা ব্যক্তিগত দিবস বাদে)।"""
+    return any(event.get("holiday", True) for event in holidays_for_date(target))
 
 # Backwards-friendly names used by the desktop UI and automated tests.
 get_holidays_for_year = holidays_for_year
