@@ -1,87 +1,26 @@
 """Bangla Calendar: Bangladesh revised civil calendar, MIT licensed."""
 from __future__ import annotations
-import calendar
+import ctypes
+import sys
 import tkinter as tk
 import webbrowser
 from datetime import date, datetime, timedelta
+from tkinter import font as tkfont
 from tkinter import ttk
-from holidays import OFFICIAL_HOLIDAY_SOURCE, get_holidays_for_date, get_holidays_for_year
+from calendar_core import (  # noqa: F401  (পুরনো import ঠিক রাখতে re-export)
+    BANGLA_DIGITS, GREGORIAN_MONTHS, GREGORIAN_SHORT, MAX_BANGLA_YEAR, MIN_BANGLA_YEAR, MONTHS,
+    SEASONS, WEEKDAYS, WEEKDAY_SHORT, bangla_month_start, bangla_to_gregorian,
+    bangla_year_for_date, bangla_year_start, bn_digits, clamp_year, format_bangla_date,
+    format_gregorian_date, gregorian_to_bangla, month_lengths, parse_int, season_for_month,
+)
+from holidays import (
+    OFFICIAL_HOLIDAY_SOURCE, get_holidays_for_date, get_holidays_for_year,
+)
 
 APP_TITLE = "বাংলা ক্যালেন্ডার"
-VERSION = "0.1.0"
-BANGLA_DIGITS = str.maketrans("0123456789", "০১২৩৪৫৬৭৮৯")
-MONTHS = ["বৈশাখ", "জ্যৈষ্ঠ", "আষাঢ়", "শ্রাবণ", "ভাদ্র", "আশ্বিন",
-          "কার্তিক", "অগ্রহায়ণ", "পৌষ", "মাঘ", "ফাল্গুন", "চৈত্র"]
-WEEKDAYS = ["সোমবার", "মঙ্গলবার", "বুধবার", "বৃহস্পতিবার", "শুক্রবার", "শনিবার", "রবিবার"]
-WEEKDAY_SHORT = ["রবি", "সোম", "মঙ্গল", "বুধ", "বৃহঃ", "শুক্র", "শনি"]
-GREGORIAN_MONTHS = ["জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন",
-                    "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"]
-GREGORIAN_SHORT = ["জানু", "ফেব্রু", "মার্চ", "এপ্রি", "মে", "জুন",
-                   "জুলাই", "আগস্ট", "সেপ্টে", "অক্টো", "নভে", "ডিসে"]
-
-SEASONS = {
-    1: ("গ্রীষ্ম", "গরমের দিন, আম-কাঁঠাল ও ফলের মৌসুম।"),
-    2: ("গ্রীষ্ম", "গরমের দিন, আম-কাঁঠাল ও ফলের মৌসুম।"),
-    3: ("বর্ষা", "বৃষ্টি, নদী ও সবুজে ভরা ঋতু।"),
-    4: ("বর্ষা", "বৃষ্টি, নদী ও সবুজে ভরা ঋতু।"),
-    5: ("শরৎ", "নীল আকাশ, সাদা মেঘ ও কাশফুলের সময়।"),
-    6: ("শরৎ", "নীল আকাশ, সাদা মেঘ ও কাশফুলের সময়।"),
-    7: ("হেমন্ত", "পাকা ধান ও নবান্নের ঋতু।"),
-    8: ("হেমন্ত", "পাকা ধান ও নবান্নের ঋতু।"),
-    9: ("শীত", "শীতের সকাল, কুয়াশা ও পিঠা-পুলির সময়।"),
-    10: ("শীত", "শীতের সকাল, কুয়াশা ও পিঠা-পুলির সময়।"),
-    11: ("বসন্ত", "ফুল, নতুন পাতা ও রঙিন প্রকৃতির ঋতু।"),
-    12: ("বসন্ত", "ফুল, নতুন পাতা ও রঙিন প্রকৃতির ঋতু।"),
-}
-
-def season_for_month(bangla_month: int) -> tuple[str, str]:
-    """Return the Bengali season and a short description for Bangla month 1-12."""
-    if bangla_month not in SEASONS:
-        raise ValueError("বাংলা মাস ১ থেকে ১২-এর মধ্যে হতে হবে")
-    return SEASONS[bangla_month]
-
-
-def bn_digits(value: int | str) -> str:
-    return str(value).translate(BANGLA_DIGITS)
-
-def bangla_year_for_date(gregorian_date: date) -> int:
-    return gregorian_date.year - (593 if (gregorian_date.month, gregorian_date.day) >= (4, 14) else 594)
-
-def month_lengths(bangla_year: int) -> tuple[int, ...]:
-    falgun_year = bangla_year + 594
-    return (31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30 if calendar.isleap(falgun_year) else 29, 30)
-
-def bangla_year_start(bangla_year: int) -> date:
-    return date(bangla_year + 593, 4, 14)
-
-def bangla_month_start(bangla_year: int, month: int) -> date:
-    if not 1 <= month <= 12:
-        raise ValueError("বাংলা মাস ১ থেকে ১২-এর মধ্যে হতে হবে")
-    return bangla_year_start(bangla_year) + timedelta(days=sum(month_lengths(bangla_year)[:month - 1]))
-
-def bangla_to_gregorian(bangla_year: int, month: int, day: int) -> date:
-    if not 1 <= month <= 12:
-        raise ValueError("বাংলা মাস ১ থেকে ১২-এর মধ্যে হতে হবে")
-    lengths = month_lengths(bangla_year)
-    if not 1 <= day <= lengths[month - 1]:
-        raise ValueError(f"এই মাসে {day} তারিখ নেই")
-    return bangla_month_start(bangla_year, month) + timedelta(days=day - 1)
-
-def gregorian_to_bangla(gregorian_date: date) -> tuple[int, int, int]:
-    year = bangla_year_for_date(gregorian_date)
-    offset = (gregorian_date - bangla_year_start(year)).days
-    for month, length in enumerate(month_lengths(year), 1):
-        if offset < length:
-            return year, month, offset + 1
-        offset -= length
-    raise ValueError("তারিখটি বাংলা বর্ষের সীমার বাইরে")
-
-def format_bangla_date(gregorian_date: date) -> str:
-    year, month, day = gregorian_to_bangla(gregorian_date)
-    return f"{bn_digits(day)} {MONTHS[month - 1]} {bn_digits(year)} বঙ্গাব্দ"
-
-def format_gregorian_date(gregorian_date: date) -> str:
-    return f"{bn_digits(gregorian_date.day)} {GREGORIAN_MONTHS[gregorian_date.month - 1]} {bn_digits(gregorian_date.year)} ({WEEKDAYS[gregorian_date.weekday()]})"
+VERSION = "0.2.0"
+FONT_CANDIDATES = ("Nirmala UI", "Vrinda", "Noto Sans Bengali", "Kalpurush", "SolaimanLipi",
+                   "Siyam Rupali", "Lohit Bengali")
 
 class BanglaCalendarApp:
     # Brand palette: deep blue, primary blue, and bright cyan, with neutral surfaces for readability.
@@ -90,15 +29,31 @@ class BanglaCalendarApp:
     def __init__(self, root: tk.Tk):
         self.root = root
         root.title(f"{APP_TITLE} · বঙ্গাব্দ")
-        root.geometry("1140x820")
-        root.minsize(980, 720)
+        self.FONT = self._pick_font()
+        # ছোট স্ক্রিন বা বড় DPI স্কেলিংয়ে উইন্ডো যেন স্ক্রিনের বাইরে না যায়
+        width = min(1140, max(760, root.winfo_screenwidth() - 60))
+        height = min(820, max(560, root.winfo_screenheight() - 110))
+        root.geometry(f"{width}x{height}")
+        root.minsize(min(980, width), min(680, height))
         root.configure(bg=self.BG)
         root.option_add("*Font", (self.FONT, 10))
         today = date.today()
+        self._rendered_today = today
         self.selected_date = today
         self.view_year, self.view_month, _ = gregorian_to_bangla(today)
         self._build()
         self.render_calendar()
+
+    def _pick_font(self) -> str:
+        """Nirmala UI না থাকলে (পুরনো Windows/Linux) অন্য বাংলা ফন্ট বেছে নেয়।"""
+        try:
+            available = set(tkfont.families(self.root))
+        except tk.TclError:
+            return self.FONT
+        for name in FONT_CANDIDATES:
+            if name in available:
+                return name
+        return self.FONT
 
     def _build(self):
         top = tk.Frame(self.root, bg=self.PRIMARY, padx=22, pady=13)
@@ -184,6 +139,10 @@ class BanglaCalendarApp:
                   padx=12, pady=7, bg=self.WHITE, fg=self.SECONDARY,
                   activebackground=self.ACCENT, activeforeground=self.PRIMARY,
                   relief="flat", bd=1, cursor="hand2").pack(side="left", padx=2)
+        tk.Button(nav, text="তারিখ রূপান্তর", command=self.show_converter,
+                  padx=12, pady=7, bg=self.WHITE, fg=self.SECONDARY,
+                  activebackground=self.ACCENT, activeforeground=self.PRIMARY,
+                  relief="flat", bd=1, cursor="hand2").pack(side="left", padx=2)
         tk.Button(nav, text="পরের মাস ›", command=lambda: self.move_month(1),
                   padx=12, pady=7, bg=self.SECONDARY, fg=self.WHITE,
                   activebackground=self.ACCENT, activeforeground=self.PRIMARY,
@@ -237,6 +196,13 @@ class BanglaCalendarApp:
         today = date.today()
         _, month, day = gregorian_to_bangla(today)
         self.today_label.configure(text=f"আজ {bn_digits(day)} {MONTHS[month - 1]}")
+        if today != self._rendered_today:
+            # অ্যাপ সারারাত খোলা থাকলে মধ্যরাতে "আজ"-এর হাইলাইট ও নির্বাচন নতুন দিনে সরে যায়
+            if self.selected_date == self._rendered_today:
+                self.selected_date = today
+                self.view_year, self.view_month, _ = gregorian_to_bangla(today)
+            self._rendered_today = today
+            self.render_calendar()
         self.root.after(1000, self.update_clock)
 
     def show_clock_tooltip(self, _event=None):
@@ -273,8 +239,10 @@ class BanglaCalendarApp:
 
     def move_month(self, delta: int):
         absolute = self.view_year * 12 + self.view_month - 1 + delta
-        self.view_year, month0 = divmod(absolute, 12)
-        self.view_month = month0 + 1
+        year, month0 = divmod(absolute, 12)
+        if not MIN_BANGLA_YEAR <= year <= MAX_BANGLA_YEAR:
+            return  # সীমার বাইরে গেলে (তীর চেপে ধরে রাখলেও) ক্র্যাশ নয়
+        self.view_year, self.view_month = year, month0 + 1
         day = min(self.selected_date.day, month_lengths(self.view_year)[self.view_month - 1])
         self.selected_date = bangla_to_gregorian(self.view_year, self.view_month, day)
         self.render_calendar()
@@ -330,7 +298,9 @@ class BanglaCalendarApp:
             greg = start + timedelta(days=day_number - 1)
             is_today = greg == current_date
             selected = greg == self.selected_date
-            holiday_events = get_holidays_for_date(greg)
+            day_events = get_holidays_for_date(greg)
+            holiday_events = [e for e in day_events if e.get("holiday", True)]
+            observances = [e for e in day_events if not e.get("holiday", True)]
             if selected:
                 bg = self.ACCENT
             elif holiday_events:
@@ -360,13 +330,16 @@ class BanglaCalendarApp:
             )
             greg_label.pack(anchor="nw", padx=7, pady=(0, 1))
 
-            if is_today or holiday_events:
+            has_badge = is_today or bool(holiday_events) or bool(observances)
+            if has_badge:
                 if is_today and holiday_events:
                     badge_text, badge_bg, badge_fg = "আজ · ছুটি", self.PRIMARY, self.WHITE
                 elif holiday_events:
                     badge_text, badge_bg, badge_fg = "ছুটি", self.SECONDARY, self.WHITE
-                else:
+                elif is_today:
                     badge_text, badge_bg, badge_fg = "আজ", self.ACCENT, self.PRIMARY
+                else:
+                    badge_text, badge_bg, badge_fg = "দিবস", self.LIGHT, self.PRIMARY
                 badge = tk.Label(
                     cell, text=badge_text, bg=badge_bg, fg=badge_fg,
                     font=(self.FONT, 7, "bold"), padx=4, pady=1, cursor="hand2"
@@ -377,7 +350,7 @@ class BanglaCalendarApp:
                 self.select_date(chosen)
             for widget in (cell, day_label, greg_label):
                 widget.bind("<Button-1>", select_cell)
-            if is_today or holiday_events:
+            if has_badge:
                 badge.bind("<Button-1>", select_cell)
 
         self.detail_bn.configure(text=format_bangla_date(self.selected_date))
@@ -399,13 +372,13 @@ class BanglaCalendarApp:
             child.destroy()
         is_today = self.selected_date == date.today()
         self.side_holiday_title.configure(
-            text="আজকের ছুটি" if is_today else "নির্বাচিত দিনের ছুটি"
+            text="আজকের ছুটি ও দিবস" if is_today else "নির্বাচিত দিনের ছুটি ও দিবস"
         )
         events = get_holidays_for_date(self.selected_date)
         if not events:
             tk.Label(
                 self.side_holiday_content,
-                text="এই দিনে তালিকাভুক্ত সরকারি বা ঐচ্ছিক ছুটি নেই।",
+                text="এই দিনে তালিকাভুক্ত ছুটি বা দিবস নেই।",
                 bg=self.SECONDARY, fg=self.WHITE, font=(self.FONT, 9),
                 wraplength=218, justify="left", anchor="w"
             ).pack(fill="x")
@@ -432,21 +405,92 @@ class BanglaCalendarApp:
                 bg=self.SECONDARY, fg=self.WHITE, font=(self.FONT, 9),
                 wraplength=218, justify="left", anchor="w"
             ).pack(fill="x", anchor="w", pady=(0, 4))
-            tk.Button(
-                self.side_holiday_content, text="আরও পড়ুন ↗",
-                command=lambda url=event["wiki"]: webbrowser.open(url),
-                bg=self.ACCENT, fg=self.PRIMARY, activebackground=self.WHITE,
-                activeforeground=self.PRIMARY, relief="flat", bd=0,
-                cursor="hand2", padx=7, pady=3, font=(self.FONT, 8, "bold")
-            ).pack(anchor="w", pady=(0, 5))
+            if event.get("wiki"):  # ব্যক্তিগত দিবসে লিংক নেই
+                tk.Button(
+                    self.side_holiday_content, text="আরও পড়ুন ↗",
+                    command=lambda url=event["wiki"]: webbrowser.open(url),
+                    bg=self.ACCENT, fg=self.PRIMARY, activebackground=self.WHITE,
+                    activeforeground=self.PRIMARY, relief="flat", bd=0,
+                    cursor="hand2", padx=7, pady=3, font=(self.FONT, 8, "bold")
+                ).pack(anchor="w", pady=(0, 5))
         if len(events) > 2:
             tk.Label(
                 self.side_holiday_content,
-                text=f"এ ছাড়াও আরও {bn_digits(len(events) - 2)}টি ছুটির এন্ট্রি রয়েছে।",
+                text=f"এ ছাড়াও আরও {bn_digits(len(events) - 2)}টি এন্ট্রি রয়েছে।",
                 bg=self.SECONDARY, fg=self.WHITE, font=(self.FONT, 8),
                 wraplength=218, justify="left", anchor="w"
             ).pack(fill="x", anchor="w")
 
+
+    def show_converter(self):
+        """খ্রিষ্টাব্দ ⇄ বঙ্গাব্দ রূপান্তরের ডায়ালগ।"""
+        window = tk.Toplevel(self.root)
+        window.title("তারিখ রূপান্তর")
+        window.configure(bg=self.BG, padx=18, pady=14)
+        window.resizable(False, False)
+        window.transient(self.root)
+        today = self.selected_date
+        b_year, b_month, b_day = gregorian_to_bangla(today)
+
+        def section(title, day, month, year, months, button_text, handler):
+            box = tk.LabelFrame(window, text=f" {title} ", bg=self.BG, fg=self.PRIMARY,
+                                font=(self.FONT, 10, "bold"), padx=12, pady=10)
+            box.pack(fill="x", pady=(0, 10))
+            row = tk.Frame(box, bg=self.BG)
+            row.pack(fill="x")
+            day_var, month_var, year_var = tk.StringVar(value=day), tk.StringVar(value=month), tk.StringVar(value=year)
+            tk.Entry(row, textvariable=day_var, width=5, justify="center").pack(side="left")
+            ttk.Combobox(row, textvariable=month_var, values=months, width=11,
+                         state="readonly").pack(side="left", padx=6)
+            tk.Entry(row, textvariable=year_var, width=8, justify="center").pack(side="left")
+            result = tk.Label(box, text="", bg=self.BG, fg=self.PRIMARY, anchor="w", justify="left",
+                              font=(self.FONT, 13, "bold"), wraplength=420)
+            result.pack(fill="x", pady=(8, 0))
+            go = tk.Button(box, text="এই তারিখে ক্যালেন্ডারে যান", relief="flat", bd=0, cursor="hand2",
+                           bg=self.ACCENT, fg=self.PRIMARY, padx=8, pady=3, state="disabled")
+            go.pack(anchor="w", pady=(6, 0))
+            target = {"date": None}
+
+            def run(_event=None):
+                try:
+                    chosen, text = handler(day_var.get(), month_var.get(), year_var.get())
+                except ValueError as exc:
+                    target["date"] = None
+                    message = str(exc)
+                    if not any("\u0980" <= ch <= "\u09ff" for ch in message):
+                        message = "তারিখটি সঠিক নয়"  # পাইথনের ইংরেজি ত্রুটিবার্তা দেখানো হয় না
+                    result.configure(text=message, fg="#B3261E")
+                    go.configure(state="disabled")
+                    return
+                target["date"] = chosen
+                result.configure(text=text, fg=self.PRIMARY)
+                go.configure(state="normal")
+
+            def jump():
+                if target["date"] is not None:
+                    self.select_date(target["date"])
+            go.configure(command=jump)
+            tk.Button(row, text=button_text, command=run, relief="flat", bd=0, cursor="hand2",
+                      bg=self.SECONDARY, fg=self.WHITE, padx=10, pady=3).pack(side="left", padx=8)
+            for widget in row.winfo_children():
+                if isinstance(widget, tk.Entry):
+                    widget.bind("<Return>", run)
+            run()
+
+        def from_gregorian(day, month, year):
+            chosen = date(parse_int(year), GREGORIAN_MONTHS.index(month) + 1, parse_int(day))
+            return chosen, f"{WEEKDAYS[chosen.weekday()]}, {format_bangla_date(chosen)}"
+
+        def from_bangla(day, month, year):
+            chosen = bangla_to_gregorian(parse_int(year), MONTHS.index(month) + 1, parse_int(day))
+            return chosen, format_gregorian_date(chosen)
+
+        section("খ্রিষ্টাব্দ → বঙ্গাব্দ", bn_digits(today.day), GREGORIAN_MONTHS[today.month - 1],
+                bn_digits(today.year), GREGORIAN_MONTHS, "বঙ্গাব্দে দেখুন", from_gregorian)
+        section("বঙ্গাব্দ → খ্রিষ্টাব্দ", bn_digits(b_day), MONTHS[b_month - 1],
+                bn_digits(b_year), MONTHS, "খ্রিষ্টাব্দে দেখুন", from_bangla)
+        tk.Label(window, text="সংখ্যা বাংলা বা ইংরেজি — যেকোনো অঙ্কে লেখা যাবে।",
+                 bg=self.BG, fg=self.MUTED, font=(self.FONT, 8)).pack(anchor="w")
 
     def show_holiday_list(self):
         year = self.selected_date.year
@@ -525,7 +569,10 @@ class BanglaCalendarApp:
             selected_title.configure(text=f"{event['name']} · {event['category']}")
             selected_summary.configure(text=event["summary"])
             selected_note.configure(text="সার-সংক্ষেপের উৎস: সংশ্লিষ্ট উইকিপিডিয়া নিবন্ধ। ছুটির তারিখের সরকারি উৎস: জনপ্রশাসন মন্ত্রণালয়ের ২০২৬ সালের প্রজ্ঞাপন।")
-            wiki_btn.configure(state="normal", command=lambda url=event["wiki"]: webbrowser.open(url))
+            if event.get("wiki"):
+                wiki_btn.configure(state="normal", command=lambda url=event["wiki"]: webbrowser.open(url))
+            else:
+                wiki_btn.configure(state="disabled")
         tree.bind("<<TreeviewSelect>>", show_selected)
         if events:
             show_selected()
@@ -537,6 +584,11 @@ class BanglaCalendarApp:
                  anchor="w", justify="left", wraplength=860).pack(fill="x", pady=(7, 0))
 
 def main():
+    if sys.platform == "win32":
+        try:  # হাই-DPI স্ক্রিনে লেখা ঝাপসা হওয়া ঠেকায়
+            ctypes.windll.shcore.SetProcessDpiAwareness(1)
+        except Exception:
+            pass
     root = tk.Tk()
     try:
         style = ttk.Style(root)
