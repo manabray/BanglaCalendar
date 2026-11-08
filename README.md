@@ -1,6 +1,6 @@
 # বাংলা ক্যালেন্ডার | Bangla Calendar
 
-Windows, Linux, macOS ও Android-এর জন্য একটি বিনামূল্যের, ওপেন-সোর্স বাংলা ক্যালেন্ডার। বাংলাদেশের সংশোধিত বাংলা বর্ষপঞ্জি অনুযায়ী বাংলা মাস, বঙ্গাব্দ এবং বাংলা ও গ্রেগরিয়ান তারিখ পাশাপাশি দেখায়।
+Windows, Linux ও macOS-এর জন্য একটি বিনামূল্যের, ওপেন-সোর্স বাংলা ক্যালেন্ডার। বাংলাদেশের সংশোধিত বাংলা বর্ষপঞ্জি অনুযায়ী বাংলা মাস, বঙ্গাব্দ এবং বাংলা ও গ্রেগরিয়ান তারিখ পাশাপাশি দেখায়।
 
 **সংস্করণ:** 0.3.0 · **লাইসেন্স:** MIT
 
@@ -16,21 +16,19 @@ Windows, Linux, macOS ও Android-এর জন্য একটি বিনা�
 - বাংলা তারিখ অনুযায়ী দিবস (রবীন্দ্র জয়ন্তী ২৫ বৈশাখ, নজরুল জয়ন্তী ১১ জ্যৈষ্ঠ) — ছুটি থেকে আলাদা “দিবস” ব্যাজে
 - নিজের দিবস/জন্মদিন যোগ করার সুযোগ ([নিচে দেখুন](#নিজের-দিবস-যোগ-করা))
 - ছোট স্ক্রিন ও হাই-DPI Windows/macOS-এ উইন্ডো ও লেখা সঠিক মাপে; বাংলা ফন্ট না থাকলে বিকল্প ফন্ট
-- Android-এর জন্য আলাদা touch-first Kivy UI; মোবাইলেও একই বাংলা তারিখের core ও ছুটির তথ্য ব্যবহৃত হয়
 - অফলাইনে কাজ করে; অতিরিক্ত runtime dependency নেই
-- GitHub Actions-এ স্বয়ংক্রিয় পরীক্ষা এবং Windows, Linux, macOS ও Android build
+- GitHub Actions-এ স্বয়ংক্রিয় পরীক্ষা এবং Windows, Linux AppImage ও macOS build
 
 ## AI-সহায়তায় তৈরি — নির্মাতা ও কৃতিত্ব
-এই ওপেন-সোর্স প্রকল্পটি **Manab Ray**-এর ধারণা, নির্দেশনা, সিদ্ধান্ত, যাচাই ও রক্ষণাবেক্ষণে তৈরি। কোড, পরীক্ষা, নথি, UI উন্নয়ন এবং একাধিক প্ল্যাটফর্মের build প্রস্তুতিতে **OpenAI ChatGPT-সহ AI-এর সহায়তা** নেওয়া হয়েছে। প্রকল্পটি AI একা তৈরি করেছে—এমন দাবি করা হচ্ছে না; মানুষ ও AI-এর সহযোগিতায় এটি তৈরি হয়েছে।
+এই ওপেন-সোর্স প্রকল্পটি **Manab Ray**-এর ধারণা, নির্দেশনা, সিদ্ধান্ত, যাচাই ও রক্ষণাবেক্ষণে তৈরি। কোড, পরীক্ষা, নথি, UI উন্নয়ন এবং Windows, Linux ও macOS build প্রস্তুতিতে **OpenAI ChatGPT-সহ AI-এর সহায়তা** নেওয়া হয়েছে। প্রকল্পটি AI একা তৈরি করেছে—এমন দাবি করা হচ্ছে না; মানুষ ও AI-এর সহযোগিতায় এটি তৈরি হয়েছে।
 
 অ্যাপের **“পরিচিতি · AI সহায়তায় তৈরি”** বোতামেও এই কৃতিত্ব দেখানো হয়। অবদান, bug report ও উন্নয়নের জন্য [GitHub repository](https://github.com/manabray/BanglaCalendar) ব্যবহার করুন।
 
 ## সর্বশেষ প্রকাশনা: v0.3.0
 - **Windows 10/11:** [BanglaCalendar.exe ডাউনলোড](https://github.com/manabray/BanglaCalendar/releases/download/v0.3.0/BanglaCalendar.exe)
-- **Linux x86_64:** [BanglaCalendar-Linux-x86_64.tar.gz ডাউনলোড](https://github.com/manabray/BanglaCalendar/releases/download/v0.3.0/BanglaCalendar-Linux-x86_64.tar.gz)
+- **Linux x86_64:** [BanglaCalendar-x86_64.AppImage ডাউনলোড](https://github.com/manabray/BanglaCalendar/releases/download/v0.3.0/BanglaCalendar-x86_64.AppImage)
 - **macOS Apple Silicon:** [BanglaCalendar-macOS-arm64.zip ডাউনলোড](https://github.com/manabray/BanglaCalendar/releases/download/v0.3.0/BanglaCalendar-macOS-arm64.zip)
 - **macOS Intel:** [BanglaCalendar-macOS-x86_64.zip ডাউনলোড](https://github.com/manabray/BanglaCalendar/releases/download/v0.3.0/BanglaCalendar-macOS-x86_64.zip)
-- **Android:** [BanglaCalendar-Android-debug.apk ডাউনলোড](https://github.com/manabray/BanglaCalendar/releases/download/v0.3.0/BanglaCalendar-Android-debug.apk)
 
 ## Windows-এ চালানো
 Python 3.10+ ইনস্টল করে প্রকল্প ফোল্ডার থেকে চালান:
@@ -42,36 +40,22 @@ python bangla_calendar.py
 Windows EXE বানাতে `build_windows.bat` ফাইলে ডাবল-ক্লিক করুন। অথবা GitHub Actions চালিয়ে `BanglaCalendar.exe` artifact ডাউনলোড করুন।
 
 
-## Linux-এ চালানো (x86_64)
-1. GitHub Releases থেকে `BanglaCalendar-Linux-x86_64.tar.gz` ডাউনলোড করুন।
-2. Archive Extract করুন।
-3. Extract করা ফোল্ডারে Terminal খুলে চালান:
+## Linux-এ চালানো (AppImage · x86_64)
+1. GitHub Releases থেকে `BanglaCalendar-x86_64.AppImage` ডাউনলোড করুন।
+2. Terminal খুলে ডাউনলোড করা ফাইলের ফোল্ডারে যান।
+3. চালানোর অনুমতি দিয়ে অ্যাপ চালান:
 
 ```bash
-./run-banglacalendar.sh
+chmod +x BanglaCalendar-x86_64.AppImage
+./BanglaCalendar-x86_64.AppImage
 ```
 
-প্রয়োজনে আগে চালানোর অনুমতি দিন:
-
-```bash
-chmod +x run-banglacalendar.sh BanglaCalendar
-```
-
-Linux প্যাকেজটি Ubuntu 22.04-এ build হয় এবং x86_64 ডেস্কটপ Linux-এর জন্য তৈরি। অন্যান্য distribution-এ system library-এর পার্থক্যের কারণে অতিরিক্ত dependency লাগতে পারে। Ubuntu-তে X11/Tk-সংক্রান্ত library না থাকলে `libx11-6`, `libxext6`, `libxrender1`, `libxft2` ও `libfontconfig1` ইনস্টল করে আবার চালান। ARM64 Linux-এর binary এই release-এ নেই।
-
+এটি একটি single-file AppImage; আলাদা করে archive extract বা Python install করতে হয় না। AppImage ফরম্যাট Linux-এর জন্য তৈরি; এখানে x86_64 build দেওয়া হবে। AppImage-এর system integration (যেমন application menu-তে যোগ করা) চাইলে AppImageLauncher বা আপনার desktop environment-এর সুবিধা ব্যবহার করতে পারেন।
 
 ## macOS-এ চালানো
 1. আপনার Mac-এর processor অনুযায়ী `macOS-arm64` (Apple Silicon M-series) অথবা `macOS-x86_64` (Intel) ZIP ডাউনলোড করুন।
 2. ZIP Extract করে `BanglaCalendar.app` Applications ফোল্ডারে নিতে পারেন।
 3. প্রথমবার অজ্ঞাত developer সতর্কতা এলে app-এ Control-click করে **Open** নির্বাচন করুন। এই build Apple Developer ID দিয়ে notarize করা নয়; প্রকাশের আগে notarization/signing আলাদাভাবে করতে হবে।
-
-## Android-এ চালানো
-1. Android ফোনে `BanglaCalendar-Android-debug.apk` ডাউনলোড করুন।
-2. APK খুলে আপনার browser/file manager-এর জন্য “Install unknown apps” অনুমতি দিন।
-3. Install করে অ্যাপ খুলুন। Android UI স্পর্শ-উপযোগী Kivy interface; বাংলা তারিখের হিসাব একই `calendar_core.py` থেকে আসে।
-
-Android APK-টি GitHub Actions-এর debug build। এটি সরাসরি sideload ও পরীক্ষার জন্য; Google Play Store-এ প্রকাশের আগে production signing, release AAB, privacy/policy review এবং Play Console submission প্রয়োজন।
-
 
 ## রঙের থিম
 অ্যাপের ব্র্যান্ড রঙ তিনটি: গাঢ় নীল `#00578E`, নীল `#0084C8` এবং উজ্জ্বল সায়ান `#00BBFF`। পঠনযোগ্যতার জন্য সাদা ও হালকা নীলাভ নিরপেক্ষ ব্যাকগ্রাউন্ডও ব্যবহার করা হয়েছে।
