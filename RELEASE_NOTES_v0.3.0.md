@@ -6,7 +6,7 @@
 
 ## নতুন ও উন্নত সুবিধা
 - Windows 10/11-এর জন্য `BanglaCalendar.exe`।
-- Linux x86_64-এর জন্য `BanglaCalendar-x86_64.AppImage`; একটি ফাইল ডাউনলোড করে executable permission দিয়ে চালানো যায়।
+- Linux x86_64-এর জন্য `BanglaCalendar-x86_64.AppImage`; `linuxdeploy` দিয়ে binary-এর shared-library dependency ও desktop metadata bundle করে তৈরি। একটি ফাইল ডাউনলোড করে executable permission দিয়ে চালানো যায়।
 - macOS Apple Silicon (arm64) ও Intel (x86_64)-এর জন্য আলাদা `.app` bundle।
 - ক্যালেন্ডারের নিচের তথ্য-লাইন নির্বাচিত তারিখের কার্ডে রাখা হয়েছে, যাতে ছোট স্ক্রিনে লেখা কাটা না যায়।
 - অ্যাপের পরিচিতি অংশে Manab Ray এবং AI-এর সহায়তার স্বচ্ছ কৃতিত্ব।
