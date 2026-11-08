@@ -7,6 +7,7 @@ from datetime import date, datetime, timedelta
 
 from kivy.app import App
 from kivy.clock import Clock
+from kivy.core.window import Window
 from kivy.metrics import dp, sp
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
@@ -371,6 +372,7 @@ class BanglaCalendarMobileApp(App):
 
 
 def main():
+    Window.clearcolor = BG
     BanglaCalendarMobileApp().run()
 
 
