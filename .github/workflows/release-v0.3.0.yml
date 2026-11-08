@@ -1,0 +1,184 @@
+name: Build and publish BanglaCalendar v0.3.0
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  desktop:
+    name: Build ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: Windows x86_64
+            os: windows-latest
+            artifact_name: BanglaCalendar-Windows
+            artifact_path: dist/BanglaCalendar.exe
+          - platform: Linux x86_64
+            os: ubuntu-22.04
+            artifact_name: BanglaCalendar-Linux-x86_64
+            artifact_path: dist/BanglaCalendar-Linux-x86_64.tar.gz
+          - platform: macOS Apple Silicon
+            os: macos-15
+            artifact_name: BanglaCalendar-macOS-arm64
+            artifact_path: dist/BanglaCalendar-macOS-arm64.zip
+          - platform: macOS Intel
+            os: macos-15-intel
+            artifact_name: BanglaCalendar-macOS-x86_64
+            artifact_path: dist/BanglaCalendar-macOS-x86_64.zip
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run test suite
+        run: python -m unittest discover -s tests -v
+
+      - name: Install PyInstaller
+        run: python -m pip install --upgrade pyinstaller
+
+      - name: Build Windows executable
+        if: runner.os == 'Windows'
+        run: python -m PyInstaller --clean --onefile --windowed --name BanglaCalendar bangla_calendar.py
+
+      - name: Build Linux executable
+        if: runner.os == 'Linux'
+        run: python -m PyInstaller --clean --onefile --windowed --name BanglaCalendar bangla_calendar.py
+
+      - name: Package Linux portable archive
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p linux-package
+          install -m 0755 dist/BanglaCalendar linux-package/BanglaCalendar
+          cat > linux-package/run-banglacalendar.sh <<'EOF'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          APP_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+          exec "${APP_DIR}/BanglaCalendar" "$@"
+          EOF
+          chmod +x linux-package/run-banglacalendar.sh
+          cp LICENSE linux-package/LICENSE
+          cat > linux-package/README-Linux.txt <<'EOF'
+          BanglaCalendar v0.3.0 — Linux x86_64
+          Extract this archive and run ./run-banglacalendar.sh in a terminal.
+          Built on Ubuntu 22.04. Other distributions may need compatible X11/Tk libraries.
+          EOF
+          tar -czf dist/BanglaCalendar-Linux-x86_64.tar.gz -C linux-package .
+
+      - name: Build macOS application bundle
+        if: runner.os == 'macOS'
+        run: python -m PyInstaller --clean --windowed --name BanglaCalendar bangla_calendar.py
+
+      - name: Package macOS application bundle
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${RUNNER_ARCH}" == "ARM64" ]]; then
+            ditto -c -k --sequesterRsrc --keepParent dist/BanglaCalendar.app dist/BanglaCalendar-macOS-arm64.zip
+          else
+            ditto -c -k --sequesterRsrc --keepParent dist/BanglaCalendar.app dist/BanglaCalendar-macOS-x86_64.zip
+          fi
+
+      - name: Upload desktop build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.artifact_path }}
+          if-no-files-found: error
+          retention-days: 30
+
+  android:
+    name: Build Android APK
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Android and Buildozer dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git zip unzip autoconf libtool pkg-config \
+            zlib1g-dev libncurses5-dev libncursesw5-dev cmake libffi-dev \
+            libssl-dev libltdl-dev libsqlite3-dev
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install buildozer==1.6.0 Cython==0.29.37
+
+      - name: Build Android debug APK
+        run: buildozer android debug
+
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: BanglaCalendar-Android-APK
+          path: bin/*.apk
+          if-no-files-found: error
+          retention-days: 30
+
+  publish:
+    name: Publish v0.3.0 multi-platform release
+    needs: [desktop, android]
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.head_commit.message == 'Release v0.3.0' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out release notes
+        uses: actions/checkout@v4
+
+      - name: Download all platform builds
+        uses: actions/download-artifact@v4
+        with:
+          path: downloaded-artifacts
+
+      - name: Prepare release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-assets
+          cp downloaded-artifacts/BanglaCalendar-Windows/BanglaCalendar.exe release-assets/BanglaCalendar.exe
+          cp downloaded-artifacts/BanglaCalendar-Linux-x86_64/BanglaCalendar-Linux-x86_64.tar.gz release-assets/BanglaCalendar-Linux-x86_64.tar.gz
+          cp downloaded-artifacts/BanglaCalendar-macOS-arm64/BanglaCalendar-macOS-arm64.zip release-assets/BanglaCalendar-macOS-arm64.zip
+          cp downloaded-artifacts/BanglaCalendar-macOS-x86_64/BanglaCalendar-macOS-x86_64.zip release-assets/BanglaCalendar-macOS-x86_64.zip
+          APK="$(find downloaded-artifacts/BanglaCalendar-Android-APK -maxdepth 1 -type f -name '*.apk' -print -quit)"
+          test -n "$APK"
+          cp "$APK" release-assets/BanglaCalendar-Android-debug.apk
+          ls -lh release-assets
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: BanglaCalendar v0.3.0
+          tag_name: v0.3.0
+          target_commitish: main
+          body_path: RELEASE_NOTES_v0.3.0.md
+          generate_release_notes: true
+          make_latest: true
+          files: |
+            release-assets/BanglaCalendar.exe
+            release-assets/BanglaCalendar-Linux-x86_64.tar.gz
+            release-assets/BanglaCalendar-macOS-arm64.zip
+            release-assets/BanglaCalendar-macOS-x86_64.zip
+            release-assets/BanglaCalendar-Android-debug.apk
