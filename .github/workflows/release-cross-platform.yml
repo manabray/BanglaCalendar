@@ -1,0 +1,119 @@
+name: Build Windows and Linux Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: Windows x86_64
+            os: windows-latest
+            artifact_name: BanglaCalendar-Windows
+            artifact_path: dist/BanglaCalendar.exe
+          - platform: Linux x86_64
+            os: ubuntu-22.04
+            artifact_name: BanglaCalendar-Linux-x86_64
+            artifact_path: dist/BanglaCalendar-Linux-x86_64.tar.gz
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run test suite
+        run: python -m unittest discover -s tests -v
+
+      - name: Install PyInstaller
+        run: python -m pip install --upgrade pyinstaller
+
+      - name: Build Windows executable
+        if: runner.os == 'Windows'
+        run: python -m PyInstaller --clean --onefile --windowed --name BanglaCalendar bangla_calendar.py
+
+      - name: Build Linux executable
+        if: runner.os == 'Linux'
+        run: python -m PyInstaller --clean --onefile --windowed --name BanglaCalendar bangla_calendar.py
+
+      - name: Package Linux portable archive
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p linux-package
+          install -m 0755 dist/BanglaCalendar linux-package/BanglaCalendar
+          cat > linux-package/run-banglacalendar.sh <<'EOF'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          APP_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+          exec "${APP_DIR}/BanglaCalendar" "$@"
+          EOF
+          chmod +x linux-package/run-banglacalendar.sh
+          cp LICENSE linux-package/LICENSE
+          cat > linux-package/README-Linux.txt <<'EOF'
+          BanglaCalendar v0.2.1 — Linux x86_64
+
+          1. Extract this archive.
+          2. Open a terminal in the extracted folder.
+          3. Run: ./run-banglacalendar.sh
+
+          Built on Ubuntu 22.04 (x86_64). Other Linux distributions may need
+          compatible X11/Tk runtime libraries. ARM64 is not included.
+          EOF
+          tar -czf dist/BanglaCalendar-Linux-x86_64.tar.gz -C linux-package .
+
+      - name: Upload platform build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.artifact_path }}
+          if-no-files-found: error
+          retention-days: 30
+
+  publish:
+    name: Publish v0.2.1 GitHub Release
+    needs: build
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.head_commit.message == 'Release v0.2.1' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out release notes
+        uses: actions/checkout@v4
+
+      - name: Download Windows and Linux builds
+        uses: actions/download-artifact@v4
+        with:
+          path: downloaded-artifacts
+
+      - name: Prepare release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-assets
+          cp downloaded-artifacts/BanglaCalendar-Windows/BanglaCalendar.exe release-assets/BanglaCalendar.exe
+          cp downloaded-artifacts/BanglaCalendar-Linux-x86_64/BanglaCalendar-Linux-x86_64.tar.gz release-assets/BanglaCalendar-Linux-x86_64.tar.gz
+          ls -lh release-assets
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: BanglaCalendar v0.2.1
+          tag_name: v0.2.1
+          target_commitish: main
+          body_path: RELEASE_NOTES_v0.2.1.md
+          generate_release_notes: true
+          make_latest: true
+          files: |
+            release-assets/BanglaCalendar.exe
+            release-assets/BanglaCalendar-Linux-x86_64.tar.gz
