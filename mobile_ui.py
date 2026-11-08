@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import webbrowser
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from kivy.app import App
 from kivy.clock import Clock
@@ -66,7 +66,8 @@ def ui_button(text, callback, color=SECONDARY, text_color=WHITE, height=42, font
     button.bind(on_release=lambda *_: callback())
     return button
 
-def card(title, background=WHITE):
+def card(title, background=WHITE, heading_color=PRIMARY):
+    from kivy.graphics import Color, RoundedRectangle
     outer = BoxLayout(
         orientation="vertical",
         size_hint_y=None,
@@ -74,9 +75,14 @@ def card(title, background=WHITE):
         padding=(dp(12), dp(9)),
         spacing=dp(5),
     )
-    outer.background_color = background
-    # A colored top label provides a clear section hierarchy without images.
-    heading = ui_label(title, 15, PRIMARY, True, 28)
+    with outer.canvas.before:
+        outer._card_color = Color(*background)
+        outer._card_shape = RoundedRectangle(pos=outer.pos, size=outer.size, radius=[dp(9)])
+    def update_card(_widget, _value):
+        outer._card_shape.pos = outer.pos
+        outer._card_shape.size = outer.size
+    outer.bind(pos=update_card, size=update_card)
+    heading = ui_label(title, 15, heading_color, True, 28)
     outer.add_widget(heading)
     outer.bind(minimum_height=outer.setter("height"))
     return outer
@@ -140,12 +146,11 @@ class BanglaCalendarMobile(BoxLayout):
         self.add_widget(self.scroller)
 
         # Compact clock + today's date.
-        self.clock_card = card("আজকের তারিখ ও সময়", PRIMARY)
+        self.clock_card = card("আজকের তারিখ ও সময়", SECONDARY, WHITE)
         self.clock_card.add_widget(ui_label("", 20, ACCENT, True, 30))
         self.clock_line = self.clock_card.children[0]
         self.today_line = auto_label("", 13, WHITE, True)
         self.clock_card.add_widget(self.today_line)
-        self.clock_card.background_color = SECONDARY
         self.content.add_widget(self.clock_card)
 
         # Season information.
@@ -197,7 +202,7 @@ class BanglaCalendarMobile(BoxLayout):
         self.detail_card.add_widget(self.detail_gregorian)
         self.content.add_widget(self.detail_card)
 
-        self.holiday_card = card("আজকের ছুটি ও দিবস", PALE)
+        self.holiday_card = card("আজকের ছুটি ও দিবস", PALE, PRIMARY)
         self.holiday_content = BoxLayout(orientation="vertical", spacing=dp(4), size_hint_y=None)
         self.holiday_content.bind(minimum_height=self.holiday_content.setter("height"))
         self.holiday_card.add_widget(self.holiday_content)
@@ -252,7 +257,7 @@ class BanglaCalendarMobile(BoxLayout):
         self.season_description.text = description
         start = __import__("calendar_core").bangla_month_start(self.view_year, self.view_month)
         days = month_lengths(self.view_year)[self.view_month - 1]
-        end = start.fromordinal(start.toordinal() + days - 1)
+        end = start + timedelta(days=days - 1)
         self.month_title.text = f"{MONTHS[self.view_month - 1]} {bn_digits(self.view_year)} বঙ্গাব্দ"
         self.month_range.text = (
             f"{bn_digits(start.day)} {GREGORIAN_MONTHS[start.month - 1]} {bn_digits(start.year)}"
