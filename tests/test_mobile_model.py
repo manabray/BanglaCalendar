@@ -1,3 +1,4 @@
+import ast
 import sys
 import unittest
 from datetime import date
@@ -8,6 +9,18 @@ from mobile_calendar_model import build_month_grid, selected_day_details, weekda
 
 
 class MobileCalendarModelTests(unittest.TestCase):
+    def test_kivy_frontend_sources_are_valid_python(self):
+        root = Path(__file__).resolve().parents[1]
+        for filename in ("main.py", "mobile_ui.py", "mobile_calendar_model.py"):
+            source = (root / filename).read_text(encoding="utf-8")
+            ast.parse(source, filename=filename)
+
+    def test_mobile_about_discloses_ai_assistance(self):
+        root = Path(__file__).resolve().parents[1]
+        source = (root / "mobile_ui.py").read_text(encoding="utf-8")
+        self.assertIn("Manab Ray", source)
+        self.assertIn("OpenAI ChatGPT", source)
+
     def test_grid_always_has_42_slots(self):
         for year, month in ((1433, 7), (1432, 12), (1433, 1), (1430, 11)):
             self.assertEqual(len(build_month_grid(year, month)), 42)
