@@ -9,7 +9,27 @@ permissions:
   contents: write
 
 jobs:
+  prepare:
+    name: Check whether this is a release build
+    runs-on: ubuntu-latest
+    outputs:
+      should_build: ${{ steps.gate.outputs.should_build }}
+    steps:
+      - id: gate
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          HEAD_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          if [[ "$EVENT_NAME" == "workflow_dispatch" || "$HEAD_MESSAGE" == "Release v0.3.0" ]]; then
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_build=false" >> "$GITHUB_OUTPUT"
+          fi
+
   desktop:
+    needs: prepare
+    if: ${{ needs.prepare.outputs.should_build == 'true' }}
     name: Build ${{ matrix.platform }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -102,6 +122,8 @@ jobs:
           retention-days: 30
 
   android:
+    needs: prepare
+    if: ${{ needs.prepare.outputs.should_build == 'true' }}
     name: Build Android APK
     runs-on: ubuntu-22.04
     steps:
@@ -141,8 +163,8 @@ jobs:
 
   publish:
     name: Publish v0.3.0 multi-platform release
-    needs: [desktop, android]
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.head_commit.message == 'Release v0.3.0' }}
+    needs: [prepare, desktop, android]
+    if: ${{ needs.prepare.outputs.should_build == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.head_commit.message == 'Release v0.3.0' }}
     runs-on: ubuntu-latest
     steps:
       - name: Check out release notes
