@@ -18,7 +18,7 @@ from holidays import (
 )
 
 APP_TITLE = "বাংলা ক্যালেন্ডার"
-VERSION = "0.2.1"
+VERSION = "0.3.0"
 FONT_CANDIDATES = ("Nirmala UI", "Vrinda", "Noto Sans Bengali", "Kalpurush", "SolaimanLipi",
                    "Siyam Rupali", "Lohit Bengali")
 
@@ -55,6 +55,41 @@ class BanglaCalendarApp:
                 return name
         return self.FONT
 
+    def show_about(self):
+        """Show transparent authorship and AI-assistance credits."""
+        window = tk.Toplevel(self.root)
+        window.title("পরিচিতি ও কৃতিত্ব")
+        window.configure(bg=self.BG)
+        window.resizable(False, False)
+        window.transient(self.root)
+        frame = tk.Frame(window, bg=self.WHITE, padx=22, pady=18,
+                         highlightbackground=self.ACCENT, highlightthickness=2)
+        frame.pack(fill="both", expand=True, padx=12, pady=12)
+        tk.Label(
+            frame, text=f"বাংলা ক্যালেন্ডার v{VERSION}",
+            bg=self.WHITE, fg=self.PRIMARY,
+            font=(self.FONT, 18, "bold")
+        ).pack(anchor="w")
+        tk.Label(
+            frame,
+            text="প্রকল্পের ধারণা, নির্দেশনা ও রক্ষণাবেক্ষণ: Manab Ray।",
+            bg=self.WHITE, fg=self.TEXT, font=(self.FONT, 11),
+            justify="left", wraplength=440
+        ).pack(anchor="w", pady=(12, 5))
+        tk.Label(
+            frame,
+            text="কোড, পরীক্ষা, নথি ও প্ল্যাটফর্ম প্রস্তুতে OpenAI ChatGPT-সহ AI-এর সহায়তা নেওয়া হয়েছে। চূড়ান্ত সিদ্ধান্ত, যাচাই ও প্রকাশনার দায়িত্ব প্রকল্প-রক্ষণাবেক্ষণকারীর।",
+            bg=self.WHITE, fg=self.TEXT, font=(self.FONT, 10),
+            justify="left", wraplength=440
+        ).pack(anchor="w", pady=(0, 12))
+        tk.Button(
+            frame, text="GitHub Repository খুলুন ↗",
+            command=lambda: webbrowser.open("https://github.com/manabray/BanglaCalendar"),
+            bg=self.SECONDARY, fg=self.WHITE, activebackground=self.ACCENT,
+            activeforeground=self.PRIMARY, relief="flat", bd=0,
+            cursor="hand2", padx=12, pady=7
+        ).pack(anchor="w")
+
     def _build(self):
         top = tk.Frame(self.root, bg=self.PRIMARY, padx=22, pady=13)
         top.pack(fill="x")
@@ -64,8 +99,14 @@ class BanglaCalendarApp:
                  font=(self.FONT, 22, "bold")).pack(anchor="w")
         tk.Label(heading, text="বাংলাদেশের সংশোধিত বাংলা বর্ষপঞ্জি",
                  bg=self.PRIMARY, fg=self.ACCENT, font=(self.FONT, 10)).pack(anchor="w", pady=(2, 0))
-        tk.Label(top, text="বাংলা তারিখ  ·  ঘড়ি  ·  ঋতুচক্র",
-                 bg=self.PRIMARY, fg=self.WHITE, font=(self.FONT, 10, "bold")).pack(side="right", anchor="center")
+        tk.Button(
+            top, text="পরিচিতি · AI সহায়তায় তৈরি",
+            command=self.show_about,
+            bg=self.SECONDARY, fg=self.WHITE,
+            activebackground=self.ACCENT, activeforeground=self.PRIMARY,
+            relief="flat", bd=0, cursor="hand2",
+            font=(self.FONT, 9, "bold"), padx=11, pady=7
+        ).pack(side="right", anchor="center")
 
         content = tk.Frame(self.root, bg=self.BG, padx=14, pady=14)
         content.pack(fill="both", expand=True)
