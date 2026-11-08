@@ -89,6 +89,7 @@ def card(title, background=WHITE, heading_color=PRIMARY):
         outer._card_shape.size = outer.size
     outer.bind(pos=update_card, size=update_card)
     heading = ui_label(title, 15, heading_color, True, 28)
+    outer.heading = heading
     outer.add_widget(heading)
     outer.bind(minimum_height=outer.setter("height"))
     return outer
@@ -316,7 +317,7 @@ class BanglaCalendarMobile(BoxLayout):
         self.holiday_content.clear_widgets()
         details = selected_day_details(self.selected_date)
         title = "আজকের ছুটি ও দিবস" if details["is_today"] else "এই দিনের ছুটি ও দিবস"
-        self.holiday_card.children[-1].text = title
+        self.holiday_card.heading.text = title
         if not details["events"]:
             self.holiday_content.add_widget(
                 auto_label("এই দিনে তালিকাভুক্ত সরকারি ছুটি বা দিবস নেই।", 12, MUTED)
