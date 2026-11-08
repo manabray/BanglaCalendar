@@ -1,6 +1,0 @@
-name: Legacy Windows-only build (manual)
-on:
-  workflow_dispatch:
-
-# Kept for historical/manual maintenance only.
-# v0.3.0 and later releases use release-v0.3.0.yml.
