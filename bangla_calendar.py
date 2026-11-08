@@ -18,7 +18,7 @@ from holidays import (
 )
 
 APP_TITLE = "বাংলা ক্যালেন্ডার"
-VERSION = "0.2.0"
+VERSION = "0.2.1"
 FONT_CANDIDATES = ("Nirmala UI", "Vrinda", "Noto Sans Bengali", "Kalpurush", "SolaimanLipi",
                    "Siyam Rupali", "Lohit Bengali")
 
@@ -32,9 +32,9 @@ class BanglaCalendarApp:
         self.FONT = self._pick_font()
         # ছোট স্ক্রিন বা বড় DPI স্কেলিংয়ে উইন্ডো যেন স্ক্রিনের বাইরে না যায়
         width = min(1140, max(760, root.winfo_screenwidth() - 60))
-        height = min(820, max(560, root.winfo_screenheight() - 110))
+        height = min(900, max(560, root.winfo_screenheight() - 70))
         root.geometry(f"{width}x{height}")
-        root.minsize(min(980, width), min(680, height))
+        root.minsize(min(980, width), min(700, height))
         root.configure(bg=self.BG)
         root.option_add("*Font", (self.FONT, 10))
         today = date.today()
@@ -184,8 +184,16 @@ class BanglaCalendarApp:
         self.detail_en = tk.Label(detail, text="", bg=self.WHITE, fg=self.TEXT,
                                   font=(self.FONT, 9))
         self.detail_en.pack(anchor="w", pady=(1, 0))
-        tk.Label(main, text="ছুটির তারিখ: সরকারি প্রজ্ঞাপন · সার-সংক্ষেপ: উইকিপিডিয়া নিবন্ধ",
-                 bg=self.BG, fg=self.MUTED, font=(self.FONT, 8)).pack(pady=(5, 0))
+        # Keep the source note inside the selected-date card; a separate label
+        # at the very bottom was being clipped on short Windows screens.
+        self.source_note = tk.Label(
+            detail,
+            text="ছুটির তারিখ: সরকারি প্রজ্ঞাপন · সার-সংক্ষেপ: উইকিপিডিয়া নিবন্ধ",
+            bg=self.LIGHT, fg=self.SECONDARY, font=(self.FONT, 9),
+            anchor="w", justify="left", wraplength=1100,
+            padx=9, pady=5
+        )
+        self.source_note.pack(fill="x", pady=(5, 0))
         self.update_clock()
 
 
