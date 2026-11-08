@@ -83,21 +83,28 @@ jobs:
           set -euo pipefail
           APPDIR="$PWD/AppDir"
           mkdir -p "$APPDIR/usr/bin"
-          mkdir -p "$APPDIR/usr/share/applications"
-          mkdir -p "$APPDIR/usr/share/icons/hicolor/scalable/apps"
           install -m 0755 dist/BanglaCalendar "$APPDIR/usr/bin/BanglaCalendar"
           install -m 0755 packaging/linux/AppRun "$APPDIR/AppRun"
           install -m 0644 packaging/linux/banglacalendar.desktop "$APPDIR/banglacalendar.desktop"
-          install -m 0644 packaging/linux/banglacalendar.svg "$APPDIR/usr/share/icons/hicolor/scalable/apps/banglacalendar.svg"
           install -m 0644 packaging/linux/banglacalendar.svg "$APPDIR/banglacalendar.svg"
           install -m 0644 LICENSE "$APPDIR/LICENSE"
+
           curl --fail --location --retry 3 \
-            https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage \
-            --output appimagetool-x86_64.AppImage
-          chmod +x appimagetool-x86_64.AppImage
+            https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage \
+            --output linuxdeploy-x86_64.AppImage
+          chmod +x linuxdeploy-x86_64.AppImage
+
           APPIMAGE_EXTRACT_AND_RUN=1 ARCH=x86_64 VERSION=0.3.0 \
-            ./appimagetool-x86_64.AppImage "$APPDIR" dist/BanglaCalendar-x86_64.AppImage
-          chmod +x dist/BanglaCalendar-x86_64.AppImage
+            ./linuxdeploy-x86_64.AppImage \
+              --appdir "$APPDIR" \
+              --executable "$APPDIR/usr/bin/BanglaCalendar" \
+              --desktop-file "$APPDIR/banglacalendar.desktop" \
+              --icon-file "$APPDIR/banglacalendar.svg" \
+              --output appimage
+
+          APPIMAGE_OUTPUT="$(find "$PWD" -maxdepth 1 -type f -name '*.AppImage' ! -name 'linuxdeploy-x86_64.AppImage' -print -quit)"
+          test -n "$APPIMAGE_OUTPUT"
+          install -m 0755 "$APPIMAGE_OUTPUT" dist/BanglaCalendar-x86_64.AppImage
           file dist/BanglaCalendar-x86_64.AppImage
 
       - name: Build macOS application bundle
