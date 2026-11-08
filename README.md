@@ -19,6 +19,11 @@ Windows ও Linux-এর জন্য একটি বিনামূল্য�
 - অফলাইনে কাজ করে; অতিরিক্ত runtime dependency নেই
 - GitHub Actions-এ স্বয়ংক্রিয় পরীক্ষা এবং Windows EXE ও Linux x86_64 প্যাকেজ build
 
+## সর্বশেষ প্রকাশনা: v0.2.1
+
+- **Windows 10/11:** [BanglaCalendar.exe ডাউনলোড](https://github.com/manabray/BanglaCalendar/releases/download/v0.2.1/BanglaCalendar.exe)
+- **Linux x86_64:** [BanglaCalendar-Linux-x86_64.tar.gz ডাউনলোড](https://github.com/manabray/BanglaCalendar/releases/download/v0.2.1/BanglaCalendar-Linux-x86_64.tar.gz)
+
 ## Windows-এ চালানো
 Python 3.10+ ইনস্টল করে প্রকল্প ফোল্ডার থেকে চালান:
 
