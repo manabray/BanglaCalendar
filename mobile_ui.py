@@ -1,6 +1,7 @@
 """Touch-friendly Kivy interface for Android (and future mobile targets)."""
 from __future__ import annotations
 
+import os
 import webbrowser
 from datetime import date, datetime, timedelta
 
@@ -24,6 +25,9 @@ from holidays import OFFICIAL_HOLIDAY_SOURCE
 from mobile_calendar_model import build_month_grid, selected_day_details, weekday_labels
 
 APP_VERSION = "0.3.0"
+# Use Android's Bengali system font when available; otherwise Kivy uses its bundled Roboto font.
+ANDROID_BENGALI_FONT = "/system/fonts/NotoSansBengali-Regular.ttf"
+MOBILE_FONT = ANDROID_BENGALI_FONT if platform == "android" and os.path.exists(ANDROID_BENGALI_FONT) else "Roboto"
 PRIMARY = (0.0, 0.341, 0.557, 1)
 SECONDARY = (0.0, 0.518, 0.784, 1)
 ACCENT = (0.0, 0.733, 1.0, 1)
@@ -45,6 +49,7 @@ def ui_label(text="", size=14, color=TEXT, bold=False, height=None, halign="left
         size_hint_y=None,
         height=dp(height or 30),
         markup=True,
+        font_name=MOBILE_FONT,
     )
     label.bind(size=lambda inst, _value: setattr(inst, "text_size", (inst.width - dp(4), None)))
     return label
@@ -60,6 +65,7 @@ def ui_button(text, callback, color=SECONDARY, text_color=WHITE, height=42, font
         color=text_color,
         font_size=sp(font_size),
         bold=True,
+        font_name=MOBILE_FONT,
         halign="center",
         valign="middle",
     )
@@ -97,6 +103,7 @@ def auto_label(text, size=13, color=TEXT, bold=False, background=None):
         valign="middle",
         size_hint_y=None,
         markup=True,
+        font_name=MOBILE_FONT,
     )
     label.bind(size=lambda inst, _value: setattr(inst, "text_size", (inst.width - dp(6), None)))
     label.bind(texture_size=lambda inst, value: setattr(inst, "height", value[1] + dp(8)))
