@@ -1,8 +1,8 @@
 # বাংলা ক্যালেন্ডার | Bangla Calendar
 
-Windows ও Linux-এর জন্য একটি বিনামূল্যের, ওপেন-সোর্স বাংলা ক্যালেন্ডার। বাংলাদেশের সংশোধিত বাংলা বর্ষপঞ্জি অনুযায়ী বাংলা মাস, বঙ্গাব্দ এবং বাংলা ও গ্রেগরিয়ান তারিখ পাশাপাশি দেখায়।
+Windows, Linux, macOS ও Android-এর জন্য একটি বিনামূল্যের, ওপেন-সোর্স বাংলা ক্যালেন্ডার। বাংলাদেশের সংশোধিত বাংলা বর্ষপঞ্জি অনুযায়ী বাংলা মাস, বঙ্গাব্দ এবং বাংলা ও গ্রেগরিয়ান তারিখ পাশাপাশি দেখায়।
 
-**সংস্করণ:** 0.2.1 · **লাইসেন্স:** MIT
+**সংস্করণ:** 0.3.0 · **লাইসেন্স:** MIT
 
 ## বৈশিষ্ট্য
 - বাংলা মাস, বাংলা সাল ও বাংলা অঙ্ক
@@ -17,12 +17,24 @@ Windows ও Linux-এর জন্য একটি বিনামূল্য�
 - নিজের দিবস/জন্মদিন যোগ করার সুযোগ ([নিচে দেখুন](#নিজের-দিবস-যোগ-করা))
 - ছোট স্ক্রিন ও হাই-DPI Windows-এ উইন্ডো ও লেখা সঠিক মাপে; বাংলা ফন্ট না থাকলে বিকল্প ফন্ট
 - অফলাইনে কাজ করে; অতিরিক্ত runtime dependency নেই
-- GitHub Actions-এ স্বয়ংক্রিয় পরীক্ষা এবং Windows EXE ও Linux x86_64 প্যাকেজ build
+- GitHub Actions-এ স্বয়ংক্রিয় পরীক্ষা এবং Windows, Linux, macOS ও Android build
 
 ## সর্বশেষ প্রকাশনা: v0.2.1
 
 - **Windows 10/11:** [BanglaCalendar.exe ডাউনলোড](https://github.com/manabray/BanglaCalendar/releases/download/v0.2.1/BanglaCalendar.exe)
 - **Linux x86_64:** [BanglaCalendar-Linux-x86_64.tar.gz ডাউনলোড](https://github.com/manabray/BanglaCalendar/releases/download/v0.2.1/BanglaCalendar-Linux-x86_64.tar.gz)
+
+## AI-সহায়তায় তৈরি — নির্মাতা ও কৃতিত্ব
+এই ওপেন-সোর্স প্রকল্পটি **Manab Ray**-এর ধারণা, নির্দেশনা, সিদ্ধান্ত, যাচাই ও রক্ষণাবেক্ষণে তৈরি। কোড, পরীক্ষা, নথি, UI উন্নয়ন এবং একাধিক প্ল্যাটফর্মের build প্রস্তুতিতে **OpenAI ChatGPT-সহ AI-এর সহায়তা** নেওয়া হয়েছে। প্রকল্পটি AI একা তৈরি করেছে—এমন দাবি করা হচ্ছে না; মানুষ ও AI-এর সহযোগিতায় এটি তৈরি হয়েছে।
+
+অ্যাপের **“পরিচিতি · AI সহায়তায় তৈরি”** বোতামেও এই কৃতিত্ব দেখানো হয়। অবদান, bug report ও উন্নয়নের জন্য [GitHub repository](https://github.com/manabray/BanglaCalendar) ব্যবহার করুন।
+
+## সর্বশেষ প্রকাশনা: v0.3.0
+- **Windows 10/11:** [BanglaCalendar.exe ডাউনলোড](https://github.com/manabray/BanglaCalendar/releases/download/v0.3.0/BanglaCalendar.exe)
+- **Linux x86_64:** [BanglaCalendar-Linux-x86_64.tar.gz ডাউনলোড](https://github.com/manabray/BanglaCalendar/releases/download/v0.3.0/BanglaCalendar-Linux-x86_64.tar.gz)
+- **macOS Apple Silicon:** [BanglaCalendar-macOS-arm64.zip ডাউনলোড](https://github.com/manabray/BanglaCalendar/releases/download/v0.3.0/BanglaCalendar-macOS-arm64.zip)
+- **macOS Intel:** [BanglaCalendar-macOS-x86_64.zip ডাউনলোড](https://github.com/manabray/BanglaCalendar/releases/download/v0.3.0/BanglaCalendar-macOS-x86_64.zip)
+- **Android:** [BanglaCalendar-Android-debug.apk ডাউনলোড](https://github.com/manabray/BanglaCalendar/releases/download/v0.3.0/BanglaCalendar-Android-debug.apk)
 
 ## Windows-এ চালানো
 Python 3.10+ ইনস্টল করে প্রকল্প ফোল্ডার থেকে চালান:
@@ -50,6 +62,20 @@ chmod +x run-banglacalendar.sh BanglaCalendar
 ```
 
 Linux প্যাকেজটি Ubuntu 22.04-এ build হয় এবং x86_64 ডেস্কটপ Linux-এর জন্য তৈরি। অন্যান্য distribution-এ system library-এর পার্থক্যের কারণে অতিরিক্ত dependency লাগতে পারে। Ubuntu-তে X11/Tk-সংক্রান্ত library না থাকলে `libx11-6`, `libxext6`, `libxrender1`, `libxft2` ও `libfontconfig1` ইনস্টল করে আবার চালান। ARM64 Linux-এর binary এই release-এ নেই।
+
+
+## macOS-এ চালানো
+1. আপনার Mac-এর processor অনুযায়ী `macOS-arm64` (Apple Silicon M-series) অথবা `macOS-x86_64` (Intel) ZIP ডাউনলোড করুন।
+2. ZIP Extract করে `BanglaCalendar.app` Applications ফোল্ডারে নিতে পারেন।
+3. প্রথমবার অজ্ঞাত developer সতর্কতা এলে app-এ Control-click করে **Open** নির্বাচন করুন। এই build Apple Developer ID দিয়ে notarize করা নয়; প্রকাশের আগে notarization/signing আলাদাভাবে করতে হবে।
+
+## Android-এ চালানো
+1. Android ফোনে `BanglaCalendar-Android-debug.apk` ডাউনলোড করুন।
+2. APK খুলে আপনার browser/file manager-এর জন্য “Install unknown apps” অনুমতি দিন।
+3. Install করে অ্যাপ খুলুন। Android UI স্পর্শ-উপযোগী Kivy interface; বাংলা তারিখের হিসাব একই `calendar_core.py` থেকে আসে।
+
+Android APK-টি GitHub Actions-এর debug build। এটি সরাসরি sideload ও পরীক্ষার জন্য; Google Play Store-এ প্রকাশের আগে production signing, release AAB, privacy/policy review এবং Play Console submission প্রয়োজন।
+
 
 ## রঙের থিম
 অ্যাপের ব্র্যান্ড রঙ তিনটি: গাঢ় নীল `#00578E`, নীল `#0084C8` এবং উজ্জ্বল সায়ান `#00BBFF`। পঠনযোগ্যতার জন্য সাদা ও হালকা নীলাভ নিরপেক্ষ ব্যাকগ্রাউন্ডও ব্যবহার করা হয়েছে।
