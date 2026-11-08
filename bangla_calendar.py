@@ -19,8 +19,11 @@ from holidays import (
 
 APP_TITLE = "বাংলা ক্যালেন্ডার"
 VERSION = "0.3.0"
-FONT_CANDIDATES = ("Nirmala UI", "Vrinda", "Noto Sans Bengali", "Kalpurush", "SolaimanLipi",
-                   "Siyam Rupali", "Lohit Bengali")
+FONT_CANDIDATES = (
+    "Nirmala UI", "Kohinoor Bangla", "Bangla MN", "Bangla Sangam MN",
+    "Vrinda", "Noto Sans Bengali", "Kalpurush", "SolaimanLipi",
+    "Siyam Rupali", "Lohit Bengali",
+)
 
 class BanglaCalendarApp:
     # Brand palette: deep blue, primary blue, and bright cyan, with neutral surfaces for readability.
