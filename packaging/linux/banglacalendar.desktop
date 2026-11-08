@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=BanglaCalendar
+Name[bn]=বাংলা ক্যালেন্ডার
+Comment=Bengali calendar, clock, seasons and Bangladesh holidays
+Comment[bn]=বাংলা তারিখ, ঘড়ি, ঋতু ও বাংলাদেশের ছুটির তালিকা
+Exec=BanglaCalendar
+Icon=banglacalendar
+Terminal=false
+Categories=Office;Calendar;Utility;
+StartupWMClass=BanglaCalendar
