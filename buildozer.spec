@@ -11,7 +11,7 @@ source.exclude_dirs = .git,.github,.buildozer,bin,build,dist,tests,__pycache__
 version = 0.3.0
 
 # Android uses the dedicated touch-first Kivy entry point (main.py).
-requirements = python3,kivy==2.3.1
+requirements = python3,kivy
 orientation = portrait
 fullscreen = 0
 
