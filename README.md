@@ -50,7 +50,15 @@ chmod +x BanglaCalendar-x86_64.AppImage
 ./BanglaCalendar-x86_64.AppImage
 ```
 
-এটি একটি single-file AppImage; আলাদা করে archive extract বা Python install করতে হয় না। AppImage ফরম্যাট Linux-এর জন্য তৈরি; এখানে x86_64 build দেওয়া হবে। AppImage-এর system integration (যেমন application menu-তে যোগ করা) চাইলে AppImageLauncher বা আপনার desktop environment-এর সুবিধা ব্যবহার করতে পারেন।
+এটি একটি single-file AppImage; আলাদা করে archive extract বা Python install করতে হয় না। প্যাকেজটি Ubuntu 22.04 runner-এ `linuxdeploy` দিয়ে তৈরি হয়, যা AppDir-এ প্রয়োজনীয় shared-library dependency যুক্ত করে। AppImage ফরম্যাট Linux-এর জন্য তৈরি; এই release-এ x86_64 build দেওয়া হবে।
+
+প্রথমবার চালাতে FUSE support দরকার হতে পারে। `libfuse.so.2` না পাওয়ার ত্রুটি এলে আপনার distribution-এর FUSE 2 compatibility package ইনস্টল করুন; বিকল্পভাবে AppImage-টি এভাবে চালিয়ে দেখতে পারেন:
+
+```bash
+./BanglaCalendar-x86_64.AppImage --appimage-extract-and-run
+```
+
+AppImage-এর system integration (যেমন application menu-তে যোগ করা) চাইলে AppImageLauncher বা আপনার desktop environment-এর সুবিধা ব্যবহার করতে পারেন।
 
 ## macOS-এ চালানো
 1. আপনার Mac-এর processor অনুযায়ী `macOS-arm64` (Apple Silicon M-series) অথবা `macOS-x86_64` (Intel) ZIP ডাউনলোড করুন।
