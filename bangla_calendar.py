@@ -39,6 +39,7 @@ class BanglaCalendarApp:
         root.option_add("*Font", (self.FONT, 10))
         today = date.today()
         self._rendered_today = today
+        self.compact = root.winfo_screenheight() < 820  # ল্যাপটপ/উচ্চ স্কেলিংয়ে ছোট ফন্ট ও প্যাডিং
         self.selected_date = today
         self.view_year, self.view_month, _ = gregorian_to_bangla(today)
         self._build()
@@ -56,18 +57,18 @@ class BanglaCalendarApp:
         return self.FONT
 
     def _build(self):
-        top = tk.Frame(self.root, bg=self.PRIMARY, padx=22, pady=13)
+        top = tk.Frame(self.root, bg=self.PRIMARY, padx=22, pady=6 if self.compact else 13)
         top.pack(fill="x")
         heading = tk.Frame(top, bg=self.PRIMARY)
         heading.pack(side="left", fill="x", expand=True)
         tk.Label(heading, text="বাংলা ক্যালেন্ডার", bg=self.PRIMARY, fg=self.WHITE,
-                 font=(self.FONT, 22, "bold")).pack(anchor="w")
+                 font=(self.FONT, 17 if self.compact else 22, "bold")).pack(anchor="w")
         tk.Label(heading, text="বাংলাদেশের সংশোধিত বাংলা বর্ষপঞ্জি",
                  bg=self.PRIMARY, fg=self.ACCENT, font=(self.FONT, 10)).pack(anchor="w", pady=(2, 0))
         tk.Label(top, text="বাংলা তারিখ  ·  ঘড়ি  ·  ঋতুচক্র",
                  bg=self.PRIMARY, fg=self.WHITE, font=(self.FONT, 10, "bold")).pack(side="right", anchor="center")
 
-        content = tk.Frame(self.root, bg=self.BG, padx=14, pady=14)
+        content = tk.Frame(self.root, bg=self.BG, padx=14, pady=8 if self.compact else 14)
         content.pack(fill="both", expand=True)
 
         # Sidebar combines month/year, today's date and a compact clock.
@@ -157,6 +158,21 @@ class BanglaCalendarApp:
                                     font=(self.FONT, 9))
         self.range_label.pack(anchor="w", pady=(1, 0))
 
+        # নিচের অংশ আগে pack করা হয়েছে: ছোট স্ক্রিনে গ্রিড ছোট হবে, এই প্যানেল কাটা পড়বে না
+        tk.Label(main, text="ছুটির তারিখ: সরকারি প্রজ্ঞাপন · সার-সংক্ষেপ: উইকিপিডিয়া নিবন্ধ",
+                 bg=self.BG, fg=self.MUTED, font=(self.FONT, 8)).pack(side="bottom", pady=(5, 0))
+        detail = tk.Frame(main, bg=self.WHITE, highlightbackground=self.LINE,
+                          highlightthickness=1, padx=14, pady=8)
+        detail.pack(side="bottom", fill="x", pady=(9, 0))
+        tk.Label(detail, text="নির্বাচিত তারিখ", bg=self.WHITE, fg=self.MUTED,
+                 font=(self.FONT, 8)).pack(anchor="w")
+        self.detail_bn = tk.Label(detail, text="", bg=self.WHITE, fg=self.PRIMARY,
+                                  font=(self.FONT, 14, "bold"))
+        self.detail_bn.pack(anchor="w", pady=(1, 0))
+        self.detail_en = tk.Label(detail, text="", bg=self.WHITE, fg=self.TEXT,
+                                  font=(self.FONT, 9))
+        self.detail_en.pack(anchor="w", pady=(1, 0))
+
         shell = tk.Frame(main, bg=self.WHITE, highlightbackground=self.ACCENT,
                          highlightthickness=1)
         shell.pack(fill="both", expand=True)
@@ -173,19 +189,6 @@ class BanglaCalendarApp:
         for row in range(6):
             self.grid.grid_rowconfigure(row, weight=1, uniform="weeks")
 
-        detail = tk.Frame(main, bg=self.WHITE, highlightbackground=self.LINE,
-                          highlightthickness=1, padx=14, pady=8)
-        detail.pack(fill="x", pady=(9, 0))
-        tk.Label(detail, text="নির্বাচিত তারিখ", bg=self.WHITE, fg=self.MUTED,
-                 font=(self.FONT, 8)).pack(anchor="w")
-        self.detail_bn = tk.Label(detail, text="", bg=self.WHITE, fg=self.PRIMARY,
-                                  font=(self.FONT, 14, "bold"))
-        self.detail_bn.pack(anchor="w", pady=(1, 0))
-        self.detail_en = tk.Label(detail, text="", bg=self.WHITE, fg=self.TEXT,
-                                  font=(self.FONT, 9))
-        self.detail_en.pack(anchor="w", pady=(1, 0))
-        tk.Label(main, text="ছুটির তারিখ: সরকারি প্রজ্ঞাপন · সার-সংক্ষেপ: উইকিপিডিয়া নিবন্ধ",
-                 bg=self.BG, fg=self.MUTED, font=(self.FONT, 8)).pack(pady=(5, 0))
         self.update_clock()
 
 
@@ -321,9 +324,9 @@ class BanglaCalendarApp:
             day_fg = self.PRIMARY if is_today or selected or holiday_events else self.TEXT
             day_label = tk.Label(
                 cell, text=bn_digits(day_number), bg=bg, fg=day_fg,
-                font=(self.FONT, 16, "bold"), cursor="hand2"
+                font=(self.FONT, 13 if self.compact else 16, "bold"), cursor="hand2"
             )
-            day_label.pack(anchor="nw", padx=7, pady=(4, 0))
+            day_label.pack(anchor="nw", padx=7, pady=(2 if self.compact else 4, 0))
             greg_label = tk.Label(
                 cell, text=f"{bn_digits(greg.day)} {GREGORIAN_SHORT[greg.month - 1]}",
                 bg=bg, fg=self.MUTED, font=(self.FONT, 8), cursor="hand2"
